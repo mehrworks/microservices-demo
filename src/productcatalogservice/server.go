@@ -66,7 +66,7 @@ func init() {
 }
 
 func main() {
-	if tracingEnabled() {
+	if os.Getenv("ENABLE_TRACING") == "1" {
 		err := initTracing()
 		if err != nil {
 			log.Warnf("warn: failed to start tracer: %+v", err)
@@ -75,7 +75,7 @@ func main() {
 		log.Info("Tracing disabled.")
 	}
 
-	if profilerEnabled() {
+	if os.Getenv("DISABLE_PROFILER") == "" {
 		log.Info("Profiling enabled.")
 		go initProfiling("productcatalogservice", "1.0.0")
 	} else {
@@ -126,8 +126,13 @@ func run(port string) string {
 		log.Fatal(err)
 	}
 
+	// Propagate trace context
+	otel.SetTextMapPropagator(
+		propagation.NewCompositeTextMapPropagator(
+			propagation.TraceContext{}, propagation.Baggage{}))
 	var srv *grpc.Server
-	srv = grpc.NewServer(serverOptions()...)
+	srv = grpc.NewServer(
+		grpc.StatsHandler(otelgrpc.NewServerHandler()))
 
 	svc := &productCatalog{}
 	err = loadCatalog(&svc.catalog)
@@ -145,29 +150,6 @@ func run(port string) string {
 
 func initStats() {
 	// TODO(drewbr) Implement OpenTelemetry stats
-}
-
-func tracingEnabled() bool {
-	return os.Getenv("ENABLE_TRACING") == "1"
-}
-
-func profilerEnabled() bool {
-	return os.Getenv("ENABLE_PROFILER") == "1"
-}
-
-func serverOptions() []grpc.ServerOption {
-	if !tracingEnabled() {
-		return nil
-	}
-
-	// Propagate trace context only when tracing is enabled.
-	otel.SetTextMapPropagator(
-		propagation.NewCompositeTextMapPropagator(
-			propagation.TraceContext{}, propagation.Baggage{}))
-
-	return []grpc.ServerOption{
-		grpc.StatsHandler(otelgrpc.NewServerHandler()),
-	}
 }
 
 func initTracing() error {
@@ -226,18 +208,10 @@ func mustConnGRPC(ctx context.Context, conn **grpc.ClientConn, addr string) {
 	var err error
 	_, cancel := context.WithTimeout(ctx, time.Second*3)
 	defer cancel()
-	*conn, err = grpc.NewClient(addr, clientOptions()...)
+	*conn, err = grpc.NewClient(addr,
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
+		grpc.WithStatsHandler(otelgrpc.NewClientHandler()))
 	if err != nil {
 		panic(errors.Wrapf(err, "grpc: failed to connect %s", addr))
 	}
-}
-
-func clientOptions() []grpc.DialOption {
-	opts := []grpc.DialOption{
-		grpc.WithTransportCredentials(insecure.NewCredentials()),
-	}
-	if tracingEnabled() {
-		opts = append(opts, grpc.WithStatsHandler(otelgrpc.NewClientHandler()))
-	}
-	return opts
 }

@@ -136,7 +136,7 @@ patches:
                 value: "productcatalogservice"
               - name: ENABLE_TRACING
                 value: "1"
-              - name: ENABLE_PROFILER
+              - name: DISABLE_PROFILER
                 value: "1"
 # recommendationservice - tracing, profiler
 - patch: |-

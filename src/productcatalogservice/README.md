@@ -4,24 +4,6 @@ Run the following command to restore dependencies to `vendor/` directory:
 
     go mod vendor
 
-## Runtime defaults
-
-By default, this service starts in the lowest-friction local mode:
-
-- Catalog data is loaded from `products.json`.
-- Tracing is off.
-- Profiler is off.
-- AlloyDB hooks stay dormant unless the AlloyDB environment is configured.
-
-Opt in to the runtime hooks with environment variables:
-
-- `ENABLE_TRACING=1` enables OpenTelemetry tracing and the OTLP gRPC exporter. `COLLECTOR_SERVICE_ADDR` must also be set in that mode.
-- `ENABLE_PROFILER=1` enables the Cloud Profiler startup path.
-- `ALLOYDB_CLUSTER_NAME` switches catalog loading from `products.json` to AlloyDB. In that mode, the service also expects `PROJECT_ID`, `REGION`, `ALLOYDB_INSTANCE_NAME`, `ALLOYDB_DATABASE_NAME`, `ALLOYDB_TABLE_NAME`, and `ALLOYDB_SECRET_NAME`.
-- `EXTRA_LATENCY=<time.Duration>` injects latency on every request.
-
-If none of those opt-in variables are set, the service remains file-backed and runs without tracing or profiling.
-
 ## Dynamic catalog reloading / artificial delay
 
 This service has a "dynamic catalog reloading" feature that is purposefully
