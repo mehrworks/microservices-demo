@@ -51,7 +51,9 @@ required for normal scaffold use.
 ## Proto bindings
 
 The checked-in gRPC bindings in `genproto/` are generated from
-`../../protos/demo.proto`. Regenerate them after editing the proto source:
+`../../protos/demo.proto` and use the
+`github.com/mehrworks/microservices-demo/src/productcatalogservice/genproto`
+package path. Regenerate them after editing the proto source:
 
 ```sh
 ./genproto.sh

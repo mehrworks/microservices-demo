@@ -435,7 +435,7 @@ const file_demo_proto_rawDesc = "" +
 	"\fListProducts\x12\x12.hipstershop.Empty\x1a!.hipstershop.ListProductsResponse\"\x00\x12D\n" +
 	"\n" +
 	"GetProduct\x12\x1e.hipstershop.GetProductRequest\x1a\x14.hipstershop.Product\"\x00\x12[\n" +
-	"\x0eSearchProducts\x12\".hipstershop.SearchProductsRequest\x1a#.hipstershop.SearchProductsResponse\"\x00B_Z]github.com/GoogleCloudPlatform/microservices-demo/src/productcatalogservice/genproto;genprotob\x06proto3"
+	"\x0eSearchProducts\x12\".hipstershop.SearchProductsRequest\x1a#.hipstershop.SearchProductsResponse\"\x00BUZSgithub.com/mehrworks/microservices-demo/src/productcatalogservice/genproto;genprotob\x06proto3"
 
 var (
 	file_demo_proto_rawDescOnce sync.Once

@@ -1,5 +1,7 @@
 This branch is a single-service scaffold derived from the upstream
-`GoogleCloudPlatform/microservices-demo` repository.
+Google microservices-demo repository and now carries the
+`github.com/mehrworks/microservices-demo` identity for the active scaffolded
+service module and generated protobuf bindings.
 
 The only active application in this branch is
 [`productcatalogservice`](/src/productcatalogservice). The original multi-service
@@ -64,7 +66,7 @@ cd src/productcatalogservice
 
 ## Upstream origin
 
-This scaffold started from the upstream
-[`GoogleCloudPlatform/microservices-demo`](https://github.com/GoogleCloudPlatform/microservices-demo)
-repository and has been intentionally reduced to a single active service path
-on branch `spike/single-service-scaffold`.
+This scaffold started from the upstream Google microservices-demo repository
+and has been intentionally reduced to a single active service path
+on branch `spike/single-service-scaffold`. The active Go module path for that
+service is `github.com/mehrworks/microservices-demo/src/productcatalogservice`.

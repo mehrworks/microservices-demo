@@ -16,7 +16,7 @@ syntax = "proto3";
 
 package hipstershop;
 
-option go_package = "github.com/GoogleCloudPlatform/microservices-demo/src/productcatalogservice/genproto;genproto";
+option go_package = "github.com/mehrworks/microservices-demo/src/productcatalogservice/genproto;genproto";
 
 message Empty {}
 

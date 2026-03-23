@@ -1,4 +1,4 @@
-module github.com/GoogleCloudPlatform/microservices-demo/src/productcatalogservice
+module github.com/mehrworks/microservices-demo/src/productcatalogservice
 
 go 1.25
 
