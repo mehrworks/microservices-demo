@@ -85,8 +85,8 @@ spec:
         - name: ENABLE_TRACING
           value: "1"
         {{- end }}
-        {{- if not .Values.googleCloudOperations.profiler }}
-        - name: DISABLE_PROFILER
+        {{- if .Values.googleCloudOperations.profiler }}
+        - name: ENABLE_PROFILER
           value: "1"
         {{- end }}
         - name: EXTRA_LATENCY
