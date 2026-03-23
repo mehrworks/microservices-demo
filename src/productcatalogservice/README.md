@@ -1,38 +1,58 @@
 # productcatalogservice
 
-Run the following command to restore dependencies to `vendor/` directory:
+`productcatalogservice` is the active seed service in this repository. It is a
+small Go gRPC server that exposes a product catalog API, loads catalog data
+from `products.json` by default, and can optionally read from AlloyDB when the
+database-related environment variables are configured.
 
-    go mod vendor
+This scaffold is intentionally narrow:
 
-## Dynamic catalog reloading / artificial delay
+- no frontend is included
+- no database integration is required for local use
+- no broader domain rename has been applied yet
 
-This service has a "dynamic catalog reloading" feature that is purposefully
-not well implemented. The goal of this feature is to allow you to modify the
-`products.json` file and have the changes be picked up without having to
-restart the service.
+## Local development
 
-However, this feature is bugged: the catalog is actually reloaded on each
-request, introducing a noticeable delay in the frontend. This delay will also
-show up in profiling tools: the `parseCatalog` function will take more than 80%
-of the CPU time.
+Run the tests:
 
-You can trigger this feature (and the delay) by sending a `USR1` signal and
-remove it (if needed) by sending a `USR2` signal:
-
-```
-# Trigger bug
-kubectl exec \
-    $(kubectl get pods -l app=productcatalogservice -o jsonpath='{.items[0].metadata.name}') \
-    -c server -- kill -USR1 1
-# Remove bug
-kubectl exec \
-    $(kubectl get pods -l app=productcatalogservice -o jsonpath='{.items[0].metadata.name}') \
-    -c server -- kill -USR2 1
+```sh
+go test ./...
 ```
 
-## Latency injection
+Start the server:
 
-This service has an `EXTRA_LATENCY` environment variable. This will inject a sleep for the specified [time.Duration](https://golang.org/pkg/time/#ParseDuration) on every call to
-to the server.
+```sh
+go run .
+```
 
-For example, use `EXTRA_LATENCY="5.5s"` to sleep for 5.5 seconds on every request.
+The service listens on port `3550` by default. Set `PORT` to override it.
+
+## Data sources
+
+By default, the service loads catalog data from `products.json`.
+
+If `ALLOYDB_CLUSTER_NAME` is set, the service switches to AlloyDB-backed
+loading and expects the related database environment variables to be present.
+That integration remains optional and is not needed for scaffold use.
+
+## Optional behavior flags
+
+`EXTRA_LATENCY` injects a fixed delay into each request. The value must parse
+as a Go `time.Duration`, for example `EXTRA_LATENCY=250ms`.
+
+The service also keeps the upstream signal-driven catalog reload toggle:
+
+- `SIGUSR1` enables reload-on-request behavior
+- `SIGUSR2` disables it again
+
+That mechanism is retained as part of the seed service behavior, but it is not
+required for normal scaffold use.
+
+## Proto bindings
+
+The checked-in gRPC bindings in `genproto/` are generated from
+`../../protos/demo.proto`. Regenerate them after editing the proto source:
+
+```sh
+./genproto.sh
+```

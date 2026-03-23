@@ -1,13 +1,10 @@
-![Continuous Integration](https://github.com/GoogleCloudPlatform/microservices-demo/workflows/Continuous%20Integration%20-%20Main/Release/badge.svg)
-
-This branch is a single-service GKE scaffold derived from the upstream
-GoogleCloudPlatform `microservices-demo` repository.
+This branch is a single-service scaffold derived from the upstream
+`GoogleCloudPlatform/microservices-demo` repository.
 
 The only active application in this branch is
 [`productcatalogservice`](/src/productcatalogservice). The original multi-service
-boutique app, frontend, load generator, and database-backed deployment options
-have been removed from the active scaffold so this repository can serve as a
-clean starting point for a single gRPC service on GKE.
+application has been removed from the active scaffold so this repository can
+serve as a clean starting point for a single Go gRPC service on Kubernetes.
 
 ## What remains
 
@@ -18,16 +15,17 @@ clean starting point for a single gRPC service on GKE.
 - [`kubernetes-manifests`](/kubernetes-manifests): Skaffold-oriented manifests
   with a local image reference.
 - [`kustomize`](/kustomize): minimal Kustomize base for the same service.
-- [`protos`](/protos): upstream protocol definitions retained for reference.
+- [`protos`](/protos): the proto source retained for the checked-in
+  `productcatalogservice` gRPC bindings.
 
 ## Default runtime mode
 
-`productcatalogservice` still defaults to file-backed local data. Unless
-AlloyDB-related environment variables are explicitly set, the service loads
-catalog data from [`src/productcatalogservice/products.json`](/src/productcatalogservice/products.json).
+`productcatalogservice` defaults to file-backed local data. Unless AlloyDB
+environment variables are explicitly set, the service loads catalog data from
+[`src/productcatalogservice/products.json`](/src/productcatalogservice/products.json).
 
-No frontend is included on this branch. No database integration is enabled by
-default.
+No frontend is included on this branch. Database-backed catalog loading remains
+optional and disabled by default.
 
 ## Quickstart
 
@@ -57,9 +55,16 @@ cd src/productcatalogservice
 go test ./...
 ```
 
+Regenerate the checked-in gRPC bindings after editing [`protos/demo.proto`](/protos/demo.proto):
+
+```sh
+cd src/productcatalogservice
+./genproto.sh
+```
+
 ## Upstream origin
 
 This scaffold started from the upstream
 [`GoogleCloudPlatform/microservices-demo`](https://github.com/GoogleCloudPlatform/microservices-demo)
-vendor repository and has been intentionally reduced to a single active service
-path on branch `spike/single-service-scaffold`.
+repository and has been intentionally reduced to a single active service path
+on branch `spike/single-service-scaffold`.
