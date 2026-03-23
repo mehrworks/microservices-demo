@@ -47,10 +47,19 @@ spec:
         ports:
         - containerPort: 3550
         env:
+        # Dormant scaffold note:
+        # This branch keeps vendor source close to upstream for now. Runtime
+        # policy for the active service is controlled here in manifests rather
+        # than by changing src/productcatalogservice semantics.
         - name: PORT
           value: "3550"
+        # Active branch default: keep profiler off unless you deliberately
+        # re-enable it in the manifest alongside other active-service changes.
         - name: DISABLE_PROFILER
           value: "1"
+        # Tracing stays off by default because ENABLE_TRACING is intentionally
+        # omitted here. Add it only when you want tracing back in the active loop.
+        # AlloyDB also stays dormant unless its env surface is added explicitly.
         readinessProbe:
           grpc:
             port: 3550
