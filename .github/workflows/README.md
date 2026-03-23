@@ -11,6 +11,14 @@
 
 This page describes the CI/CD workflows for the Online Boutique app, which run in [Github Actions](https://github.com/GoogleCloudPlatform/microservices-demo/actions).
 
+## Current branch delta
+
+On `spike/dormant-scaffold-v2`, treat the rest of this document as **historical full-app workflow reference**. The current active branch behavior is narrower:
+
+- only `productcatalogservice` is active in CI/deploy waits
+- full-app smoke/staging behavior stays preserved in workflow YAML as commented history
+- the canonical branch guide is [`docs/dormant-scaffold.md`](/docs/dormant-scaffold.md)
+
 ## Infrastructure
 
 The CI/CD pipelines for Online Boutique run in Github Actions, using a pool of two [self-hosted runners]((https://help.github.com/en/actions/automating-your-workflow-with-github-actions/about-self-hosted-runners)). These runners are GCE instances (virtual machines) that, for every open Pull Request in the repo, run the code test pipeline, deploy test pipeline, and (on main) deploy the latest version of the app to [cymbal-shops.retail.cymbal.dev](https://cymbal-shops.retail.cymbal.dev)
