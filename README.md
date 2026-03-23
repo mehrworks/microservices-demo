@@ -34,7 +34,8 @@ Find **Protocol Buffers Descriptions** at the [`./protos` directory](/protos).
 > reference, but only `productcatalogservice` is active in the current build,
 > deploy, and CI loop. Runtime defaults for that active service are controlled
 > at the manifest layer so vendor source can stay close to upstream until a real
-> fork/rename of the service happens.
+> fork/rename of the service happens. See [`docs/dormant-scaffold.md`](/docs/dormant-scaffold.md)
+> for the current branch operating model and reactivation checklist.
 | [currencyservice](/src/currencyservice)             | Node.js       | Converts one money amount to another currency. Uses real values fetched from European Central Bank. It's the highest QPS service. |
 | [paymentservice](/src/paymentservice)               | Node.js       | Charges the given credit card info (mock) with the given amount and returns a transaction ID.                                     |
 | [shippingservice](/src/shippingservice)             | Go            | Gives shipping cost estimates based on the shopping cart. Ships items to the given address (mock)                                 |
