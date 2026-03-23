@@ -15,6 +15,10 @@ Prove all of the following with the smallest possible scope:
 
 This is intentionally **not** a full app deployment.
 
+It also intentionally differs from the upstream repository quickstart:
+- upstream README deploys the full app with `kubectl apply -f ./release/kubernetes-manifests.yaml`
+- this branch uses `skaffold.yaml` because the active loop has been narrowed to `productcatalogservice` only
+
 ## What this POC includes
 
 - one small GKE cluster
@@ -36,6 +40,14 @@ This is intentionally **not** a full app deployment.
 - branch: `spike/dormant-scaffold-v2`
 - experimental GCP project only
 - region example: `europe-west3`
+
+## Prerequisites
+
+- `gcloud`
+- `kubectl`
+- `skaffold` **2.0.2+**
+- Docker if you want the local-build path
+- optional: `grpcurl` for the proof call
 
 ## Environment
 
@@ -98,6 +110,12 @@ gcloud container clusters get-credentials "$CLUSTER" \
   --project "$PROJECT_ID"
 ```
 
+Optional sanity check:
+
+```bash
+kubectl get nodes
+```
+
 Create namespace:
 
 ```bash
@@ -120,6 +138,10 @@ skaffold run \
   --namespace "$NAMESPACE" \
   --default-repo "${REGION}-docker.pkg.dev/${PROJECT_ID}/${AR_REPO}"
 ```
+
+Notes:
+- first build/deploy can take a while
+- if local Docker/build is slow or problematic, use the `gcb` fallback below
 
 ### Fallback: Google Cloud Build
 
@@ -223,7 +245,13 @@ That is enough to prove the repo can bootstrap into GCP and kick-start a live ap
 
 ## Cheap cleanup after the proof
 
-Delete the cluster if this is just a bootstrap proof:
+If you deployed with `skaffold run`, delete the deployed resources first:
+
+```bash
+skaffold delete --namespace "$NAMESPACE"
+```
+
+Then delete the cluster if this was just a bootstrap proof:
 
 ```bash
 gcloud container clusters delete "$CLUSTER" \
