@@ -12,6 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# Dormant scaffold note:
+# This branch keeps the original multi-service repo shape as reference, but only
+# productcatalogservice is active in the CI/deploy loop for now.
+# When you add or remove active services later, update this workflow together
+# with skaffold.yaml, kubernetes-manifests/kustomization.yaml,
+# kustomize/base/kustomization.yaml, and the service-specific waits/smoke checks
+# below. Prefer commenting services in or out together rather than deleting the
+# surrounding workflow history.
+
 name: "Continuous Integration - Main/Release"
 on:
   push:
@@ -32,27 +41,36 @@ jobs:
     runs-on: [self-hosted, is-enabled]
     steps:
     - uses: actions/checkout@v6
-    - uses: actions/setup-dotnet@v5
-      env:
-        DOTNET_INSTALL_DIR: "./.dotnet"
-      with:
-        dotnet-version: '10.0'
+    # Dormant scaffold mode: keep C# tooling visible in workflow history, but
+    # cartservice is not in the active loop right now.
+    # - uses: actions/setup-dotnet@v5
+    #   env:
+    #     DOTNET_INSTALL_DIR: "./.dotnet"
+    #   with:
+    #     dotnet-version: '10.0'
     - uses: actions/setup-go@v6
       with:
         go-version: '1.25'
     - name: Go Unit Tests
       timeout-minutes: 10
       run: |
-        for SERVICE in "shippingservice" "productcatalogservice"; do
+        # Dormant scaffold mode: only productcatalogservice stays active.
+        # Re-enable other services here in the same commit that reactivates them
+        # in skaffold/manifests and deployment waits below.
+        for SERVICE in "productcatalogservice"; do
           echo "testing $SERVICE..."
           pushd src/$SERVICE
           go test
           popd
         done
-    - name: C# Unit Tests
-      timeout-minutes: 10
-      run: |
-        dotnet test src/cartservice/
+        # Previously active in this workflow:
+        # - shippingservice
+    # Dormant scaffold mode: cartservice unit tests are preserved here as
+    # commented history until cartservice returns to the active loop.
+    # - name: C# Unit Tests
+    #   timeout-minutes: 10
+    #   run: |
+    #     dotnet test src/cartservice/
   deployment-tests:
     runs-on: [self-hosted, is-enabled]
     needs: code-tests
@@ -80,7 +98,8 @@ jobs:
         EOF
         echo Deploying application
         skaffold config set --global local-cluster false
-        skaffold run --default-repo=us-docker.pkg.dev/$PROJECT_ID/$GITHUB_REF --tag=$GITHUB_SHA --namespace=$NAMESPACE -p network-policies
+        # Dormant scaffold mode: skip the full-app network-policies profile.
+        skaffold run --default-repo=us-docker.pkg.dev/$PROJECT_ID/$GITHUB_REF --tag=$GITHUB_SHA --namespace=$NAMESPACE
       env:
         ACTIONS_ALLOW_UNSECURE_COMMANDS: true
         PROJECT_ID: "online-boutique-ci"
@@ -91,32 +110,37 @@ jobs:
       run: |
         set -x
         kubectl config set-context --current --namespace=$NAMESPACE
-        kubectl wait --for=condition=available --timeout=1000s deployment/redis-cart
-        kubectl wait --for=condition=available --timeout=1000s deployment/adservice
-        kubectl wait --for=condition=available --timeout=1000s deployment/cartservice
-        kubectl wait --for=condition=available --timeout=1000s deployment/checkoutservice
-        kubectl wait --for=condition=available --timeout=1000s deployment/currencyservice
-        kubectl wait --for=condition=available --timeout=1000s deployment/emailservice
-        kubectl wait --for=condition=available --timeout=1000s deployment/frontend
-        kubectl wait --for=condition=available --timeout=1000s deployment/loadgenerator
-        kubectl wait --for=condition=available --timeout=1000s deployment/paymentservice
+        # Dormant scaffold mode: only productcatalogservice is expected here.
         kubectl wait --for=condition=available --timeout=1000s deployment/productcatalogservice
-        kubectl wait --for=condition=available --timeout=1000s deployment/recommendationservice
-        kubectl wait --for=condition=available --timeout=1000s deployment/shippingservice
-    - name: Smoke Test
-      timeout-minutes: 5
-      run: |
-        set -x
-        # start fresh loadgenerator pod
-        kubectl delete pod -l app=loadgenerator
-        # wait for requests to come in
-        REQUEST_COUNT="0"
-        while [[ "$REQUEST_COUNT"  -lt "50"  ]]; do
-            sleep 5
-            REQUEST_COUNT=$(kubectl logs -l app=loadgenerator | grep Aggregated | awk '{print $2}')
-        done
-        # ensure there are no errors hitting endpoints
-        ERROR_COUNT=$(kubectl logs -l app=loadgenerator | grep Aggregated | awk '{print $3}' | sed "s/[(][^)]*[)]//g")
-        if [[ "$ERROR_COUNT" -gt "0" ]]; then
-          exit 1
-        fi
+        # Previously active waits retained as commented history:
+        # kubectl wait --for=condition=available --timeout=1000s deployment/redis-cart
+        # kubectl wait --for=condition=available --timeout=1000s deployment/adservice
+        # kubectl wait --for=condition=available --timeout=1000s deployment/cartservice
+        # kubectl wait --for=condition=available --timeout=1000s deployment/checkoutservice
+        # kubectl wait --for=condition=available --timeout=1000s deployment/currencyservice
+        # kubectl wait --for=condition=available --timeout=1000s deployment/emailservice
+        # kubectl wait --for=condition=available --timeout=1000s deployment/frontend
+        # kubectl wait --for=condition=available --timeout=1000s deployment/loadgenerator
+        # kubectl wait --for=condition=available --timeout=1000s deployment/paymentservice
+        # kubectl wait --for=condition=available --timeout=1000s deployment/recommendationservice
+        # kubectl wait --for=condition=available --timeout=1000s deployment/shippingservice
+    # Dormant scaffold mode: the old full-app smoke test depended on frontend
+    # and loadgenerator, so it stays here as commented history until those
+    # services return to the active loop.
+    # - name: Smoke Test
+    #   timeout-minutes: 5
+    #   run: |
+    #     set -x
+    #     # start fresh loadgenerator pod
+    #     kubectl delete pod -l app=loadgenerator
+    #     # wait for requests to come in
+    #     REQUEST_COUNT="0"
+    #     while [[ "$REQUEST_COUNT"  -lt "50"  ]]; do
+    #         sleep 5
+    #         REQUEST_COUNT=$(kubectl logs -l app=loadgenerator | grep Aggregated | awk '{print $2}')
+    #     done
+    #     # ensure there are no errors hitting endpoints
+    #     ERROR_COUNT=$(kubectl logs -l app=loadgenerator | grep Aggregated | awk '{print $3}' | sed "s/[(][^)]*[)]//g")
+    #     if [[ "$ERROR_COUNT" -gt "0" ]]; then
+    #       exit 1
+    #     fi
