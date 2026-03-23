@@ -1,5 +1,14 @@
 # cymbal-shops.retail.cymbal.dev manifests
 
+> **Dormant scaffold note**
+>
+> This directory documents the original frontend/public-domain release path for
+> the full Online Boutique app. On this branch, those manifests are preserved as
+> reference only; the active loop currently isolates `productcatalogservice`.
+> If the frontend or other services return to the active deployment surface,
+> reactivate them deliberately together with `skaffold.yaml`, kustomization
+> files, and CI/release workflows.
+
 This directory contains extra deploy manifests for configuring Online Boutique solution on GKE for cymbal-shops.retail.cymbal.dev.
 
 _Note: before moving forward, the Online Boutique apps should already be deployed [on the online-boutique-release GKE cluster](/docs/releasing#10-deploy-releasekubernetes-manifestsyaml-to-our-online-boutique-release-gke-cluster)._

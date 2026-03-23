@@ -1,5 +1,14 @@
 # GitHub Actions Workflows
 
+> **Dormant scaffold note**
+>
+> This branch keeps the original multi-service repo shape as reference, but only
+> `productcatalogservice` is active in the current CI/deploy loop. The older
+> full-app workflow steps remain in the workflow YAML files as commented history.
+> When you add or remove active services later, update the workflow files
+> together with `skaffold.yaml`, `kubernetes-manifests/kustomization.yaml`, and
+> `kustomize/base/kustomization.yaml`.
+
 This page describes the CI/CD workflows for the Online Boutique app, which run in [Github Actions](https://github.com/GoogleCloudPlatform/microservices-demo/actions).
 
 ## Infrastructure

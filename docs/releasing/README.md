@@ -1,5 +1,13 @@
 # Releasing Online Boutique
 
+> **Dormant scaffold note**
+>
+> This document describes the original full-app release flow. On this branch,
+> the repository shape is preserved, but only `productcatalogservice` is active
+> in the current build/deploy loop. Treat the rest of this document as retained
+> release knowledge for later reactivation, not as the current branch-default
+> release path.
+
 This document walks through the process of creating a new release of Online Boutique.
 
 ## Prerequisites for tagging a release
