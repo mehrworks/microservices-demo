@@ -1,8 +1,7 @@
 # ./kubernetes-manifests
 
-:warning: Kubernetes manifests provided in this directory are not directly
-deployable to a cluster. They are meant to be used with `skaffold` command to
-insert the correct `image:` tags.
+This directory contains the active Kubernetes manifest set for the
+single-service scaffold on `spike/single-service-scaffold`.
 
-Use the manifests in [/release](/release) directory which are configured with
-pre-built public images.
+These manifests are intended to be used with `skaffold`, which will inject the
+locally built `productcatalogservice` image reference.
