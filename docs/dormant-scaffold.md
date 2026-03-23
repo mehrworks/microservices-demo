@@ -21,6 +21,8 @@ That currently means:
   - only `productcatalogservice.yaml` is active
 - `kustomize/base/kustomization.yaml`
   - only `productcatalogservice.yaml` is active
+- `release/kubernetes-manifests.yaml`
+  - narrowed so the upstream-style `kubectl apply -f ./release/kubernetes-manifests.yaml` path still works for the active service only
 - `.github/workflows/ci-main.yaml`
   - only `productcatalogservice` is tested/deployed/waited on
   - older full-app flow is preserved as comments

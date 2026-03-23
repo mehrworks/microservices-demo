@@ -15,9 +15,10 @@ Prove all of the following with the smallest possible scope:
 
 This is intentionally **not** a full app deployment.
 
-It also intentionally differs from the upstream repository quickstart:
-- upstream README deploys the full app with `kubectl apply -f ./release/kubernetes-manifests.yaml`
-- this branch uses `skaffold.yaml` because the active loop has been narrowed to `productcatalogservice` only
+This branch now supports both familiar upstream entry styles, narrowed to the
+active service only:
+- upstream-style release path: `kubectl apply -f ./release/kubernetes-manifests.yaml`
+- upstream-style dev path: `skaffold run --default-repo=...`
 
 ## What this POC includes
 
@@ -129,9 +130,31 @@ Optional:
 kubectl config set-context --current --namespace="$NAMESPACE"
 ```
 
-## 4) Deploy only the active service via Skaffold
+## 4) Build and deploy the active service
 
-### Preferred: local build
+You have two valid entry styles on this branch.
+
+### Option A — upstream-style release path
+
+If you want to stay closest to the upstream README shape, first build and push
+`productcatalogservice`, then apply the narrowed release manifest.
+
+Build and push the image:
+
+```bash
+skaffold build \
+  --default-repo "${REGION}-docker.pkg.dev/${PROJECT_ID}/${AR_REPO}"
+```
+
+Then deploy with the upstream-style command:
+
+```bash
+kubectl apply -f ./release/kubernetes-manifests.yaml -n "$NAMESPACE"
+```
+
+### Option B — upstream-style dev path via Skaffold run
+
+Preferred if you want Skaffold to handle build + deploy together.
 
 ```bash
 skaffold run \
@@ -153,7 +176,8 @@ skaffold run -p gcb \
   --default-repo "${REGION}-docker.pkg.dev/${PROJECT_ID}/${AR_REPO}"
 ```
 
-Because this branch comments out the other services in the active loop, this should only build and deploy `productcatalogservice`.
+Because this branch comments out the other services in the active loop, either
+path should only build and deploy `productcatalogservice`.
 
 ## 5) Wait for readiness
 

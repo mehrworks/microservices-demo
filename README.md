@@ -53,6 +53,15 @@ Find **Protocol Buffers Descriptions** at the [`./protos` directory](/protos).
 
 ## Quickstart (GKE)
 
+> **Dormant scaffold branch note**
+>
+> On `spike/dormant-scaffold-v2`, this familiar quickstart command shape is
+> preserved, but `./release/kubernetes-manifests.yaml` is intentionally narrowed
+> to `productcatalogservice` only. So the `kubectl apply` step still works, but
+> the proof path is a gRPC call to `productcatalogservice`, not the original
+> full frontend experience. See [`docs/poc-gke-bootstrap.md`](/docs/poc-gke-bootstrap.md)
+> for the branch-specific bootstrap proof flow.
+
 1. Ensure you have the following requirements:
    - [Google Cloud project](https://cloud.google.com/resource-manager/docs/creating-managing-projects#creating_a_project).
    - Shell environment with `gcloud`, `git`, and `kubectl`.
