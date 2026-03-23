@@ -99,3 +99,15 @@ func TestSearchProducts(t *testing.T) {
 		t.Errorf("got %d, want %d", got, want)
 	}
 }
+
+func TestEnvEnabled(t *testing.T) {
+	t.Setenv("ENABLE_TRACING", "1")
+	t.Setenv("ENABLE_PROFILER", "0")
+
+	if !tracingEnabled() {
+		t.Fatal("expected tracing to be enabled when ENABLE_TRACING=1")
+	}
+	if profilingEnabled() {
+		t.Fatal("expected profiling to stay disabled unless ENABLE_PROFILER=1")
+	}
+}

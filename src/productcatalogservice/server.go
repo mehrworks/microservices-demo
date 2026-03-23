@@ -66,7 +66,7 @@ func init() {
 }
 
 func main() {
-	if os.Getenv("ENABLE_TRACING") == "1" {
+	if tracingEnabled() {
 		err := initTracing()
 		if err != nil {
 			log.Warnf("warn: failed to start tracer: %+v", err)
@@ -75,7 +75,7 @@ func main() {
 		log.Info("Tracing disabled.")
 	}
 
-	if os.Getenv("DISABLE_PROFILER") == "" {
+	if profilingEnabled() {
 		log.Info("Profiling enabled.")
 		go initProfiling("productcatalogservice", "1.0.0")
 	} else {
@@ -126,13 +126,15 @@ func run(port string) string {
 		log.Fatal(err)
 	}
 
-	// Propagate trace context
-	otel.SetTextMapPropagator(
-		propagation.NewCompositeTextMapPropagator(
-			propagation.TraceContext{}, propagation.Baggage{}))
-	var srv *grpc.Server
-	srv = grpc.NewServer(
-		grpc.StatsHandler(otelgrpc.NewServerHandler()))
+	serverOptions := []grpc.ServerOption{}
+	if tracingEnabled() {
+		// Propagate trace context only when tracing is enabled.
+		otel.SetTextMapPropagator(
+			propagation.NewCompositeTextMapPropagator(
+				propagation.TraceContext{}, propagation.Baggage{}))
+		serverOptions = append(serverOptions, grpc.StatsHandler(otelgrpc.NewServerHandler()))
+	}
+	srv := grpc.NewServer(serverOptions...)
 
 	svc := &productCatalog{}
 	err = loadCatalog(&svc.catalog)
@@ -150,6 +152,18 @@ func run(port string) string {
 
 func initStats() {
 	// TODO(drewbr) Implement OpenTelemetry stats
+}
+
+func tracingEnabled() bool {
+	return envEnabled("ENABLE_TRACING")
+}
+
+func profilingEnabled() bool {
+	return envEnabled("ENABLE_PROFILER")
+}
+
+func envEnabled(key string) bool {
+	return os.Getenv(key) == "1"
 }
 
 func initTracing() error {
@@ -208,9 +222,13 @@ func mustConnGRPC(ctx context.Context, conn **grpc.ClientConn, addr string) {
 	var err error
 	_, cancel := context.WithTimeout(ctx, time.Second*3)
 	defer cancel()
-	*conn, err = grpc.NewClient(addr,
+	clientOptions := []grpc.DialOption{
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
-		grpc.WithStatsHandler(otelgrpc.NewClientHandler()))
+	}
+	if tracingEnabled() {
+		clientOptions = append(clientOptions, grpc.WithStatsHandler(otelgrpc.NewClientHandler()))
+	}
+	*conn, err = grpc.NewClient(addr, clientOptions...)
 	if err != nil {
 		panic(errors.Wrapf(err, "grpc: failed to connect %s", addr))
 	}

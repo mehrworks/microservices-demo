@@ -29,6 +29,15 @@ environment variables are explicitly set, the service loads catalog data from
 No frontend is included on this branch. Database-backed catalog loading remains
 optional and disabled by default.
 
+Observability hooks are also local-first by default:
+
+- tracing is off unless `ENABLE_TRACING=1`
+- profiler is off unless `ENABLE_PROFILER=1`
+- `COLLECTOR_SERVICE_ADDR` is only required when tracing is enabled
+
+If those env vars are unset, the service starts without attempting cloud trace
+export, Cloud Profiler startup, or extra gRPC OTel instrumentation.
+
 ## Quickstart
 
 Build and deploy with Skaffold:
@@ -63,6 +72,36 @@ Regenerate the checked-in gRPC bindings after editing [`protos/demo.proto`](/pro
 cd src/productcatalogservice
 ./genproto.sh
 ```
+
+## Runtime modes
+
+Local file-backed mode is the default and requires no cloud-specific env vars:
+
+```sh
+cd src/productcatalogservice
+go run .
+```
+
+Optional cloud hooks can be enabled explicitly:
+
+```sh
+cd src/productcatalogservice
+ENABLE_TRACING=1 COLLECTOR_SERVICE_ADDR=otel-collector:4317 go run .
+ENABLE_PROFILER=1 go run .
+```
+
+Optional AlloyDB-backed catalog loading is selected only when
+`ALLOYDB_CLUSTER_NAME` is set. In that mode the service expects:
+
+- `PROJECT_ID`
+- `REGION`
+- `ALLOYDB_CLUSTER_NAME`
+- `ALLOYDB_INSTANCE_NAME`
+- `ALLOYDB_DATABASE_NAME`
+- `ALLOYDB_TABLE_NAME`
+- `ALLOYDB_SECRET_NAME`
+
+Without `ALLOYDB_CLUSTER_NAME`, none of the AlloyDB or Secret Manager setup is used.
 
 ## Upstream origin
 
