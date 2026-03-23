@@ -59,8 +59,8 @@ Find **Protocol Buffers Descriptions** at the [`./protos` directory](/protos).
 > preserved, but `./release/kubernetes-manifests.yaml` is intentionally narrowed
 > to `productcatalogservice` only. So the `kubectl apply` step still works, but
 > the proof path is a gRPC call to `productcatalogservice`, not the original
-> full frontend experience. See [`docs/poc-gke-bootstrap.md`](/docs/poc-gke-bootstrap.md)
-> for the branch-specific bootstrap proof flow.
+> full frontend experience. See [`docs/dormant-scaffold.md`](/docs/dormant-scaffold.md)
+> for the branch-specific operating model and bootstrap proof flow.
 
 1. Ensure you have the following requirements:
    - [Google Cloud project](https://cloud.google.com/resource-manager/docs/creating-managing-projects#creating_a_project).
