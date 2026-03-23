@@ -128,7 +128,6 @@ Find **Protocol Buffers Descriptions** at the [`./protos` directory](/protos).
 
 ## Additional deployment options
 
-- **Single-service `productcatalogservice` loop**: `skaffold.yaml` and the existing [`/kubernetes-manifests`](/kubernetes-manifests) and [`/kustomize/base`](/kustomize/base) paths remain the full-app baseline. For an additive single-service path, use `skaffold -f skaffold.productcatalogservice.yaml run` or `skaffold -f skaffold.productcatalogservice.yaml dev` with [`/kubernetes-manifests/productcatalogservice-only`](/kubernetes-manifests/productcatalogservice-only).
 - **Terraform**: [See these instructions](/terraform) to learn how to deploy Online Boutique using [Terraform](https://www.terraform.io/intro).
 - **Istio / Cloud Service Mesh**: [See these instructions](/kustomize/components/service-mesh-istio/README.md) to deploy Online Boutique alongside an Istio-backed service mesh.
 - **Non-GKE clusters (Minikube, Kind, etc)**: See the [Development guide](/docs/development-guide.md) to learn how you can deploy Online Boutique on non-GKE clusters.
