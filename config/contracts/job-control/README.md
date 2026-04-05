@@ -17,8 +17,12 @@ Current contract artifacts cover:
 - worker claim response
 - worker status update
 - job record
+- job store record
+- job store update
+- result access record
 - cancel response
 - result reference
+- error envelope
 
 - `job-control.openapi.json`
   - minimal cloud-side API surface that stitches the payloads together
@@ -33,8 +37,12 @@ Current contract artifacts cover:
 - `schema/claim-next-response.schema.json`
 - `schema/status-update.schema.json`
 - `schema/job-record.schema.json`
+- `schema/job-store-record.schema.json`
+- `schema/job-store-update.schema.json`
+- `schema/result-access-record.schema.json`
 - `schema/cancel-job-response.schema.json`
 - `schema/result-reference.schema.json`
+- `schema/error-envelope.schema.json`
 - `*.example.json` companions for each shape
 
 ## Design intent
@@ -48,3 +56,8 @@ For the higher-level rationale, use:
 - `docs/architecture/hybrid-execution-model.md`
 - `docs/architecture/runtime-responsibility-matrix.md`
 - `docs/architecture/job-lifecycle-contract.md`
+- `docs/architecture/job-control-storage-boundary.md`
+
+For the first executable reference implementation, use:
+
+- `tools/jobcontrolref/`

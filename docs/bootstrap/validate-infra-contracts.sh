@@ -53,8 +53,12 @@ schema_files = [
     "config/contracts/job-control/schema/claim-next-response.schema.json",
     "config/contracts/job-control/schema/status-update.schema.json",
     "config/contracts/job-control/schema/job-record.schema.json",
+    "config/contracts/job-control/schema/job-store-record.schema.json",
+    "config/contracts/job-control/schema/job-store-update.schema.json",
+    "config/contracts/job-control/schema/result-access-record.schema.json",
     "config/contracts/job-control/schema/cancel-job-response.schema.json",
     "config/contracts/job-control/schema/result-reference.schema.json",
+    "config/contracts/job-control/schema/error-envelope.schema.json",
     "config/contracts/job-control/job-control.openapi.json",
 ]
 
@@ -67,8 +71,12 @@ examples = {
     "config/contracts/job-control/claim-next-response.example.json": ["worker_id", "poll_after_seconds", "job"],
     "config/contracts/job-control/status-update.example.json": ["job_id", "worker_id", "state", "updated_at"],
     "config/contracts/job-control/job-record.example.json": ["job_id", "job_type", "state", "submitted_at", "updated_at", "payload"],
+    "config/contracts/job-control/job-store-record.example.json": ["job", "revision", "etag"],
+    "config/contracts/job-control/job-store-update.example.json": ["job_id", "expected_revision"],
+    "config/contracts/job-control/result-access-record.example.json": ["result_ref", "retrieval_mode", "available"],
     "config/contracts/job-control/cancel-job-response.example.json": ["job_id", "cancel_requested", "state"],
     "config/contracts/job-control/result-reference.example.json": ["kind", "uri", "content_type"],
+    "config/contracts/job-control/error-envelope.example.json": ["error_code", "message"],
 }
 
 for rel in schema_files:
@@ -135,6 +143,7 @@ ensure_workspace() {
 
 need_cmd terraform
 need_cmd python3
+need_cmd go
 
 cd "$ROOT_DIR"
 
@@ -179,6 +188,9 @@ log "validating profile bundles"
 
 log "validating contract artifacts"
 validate_contract_artifacts
+
+log "validating job-control reference package"
+(cd "$ROOT_DIR/tools/jobcontrolref" && go test ./... >/dev/null)
 
 for stage in "${stages[@]}"; do
   log "initializing ${stage}"

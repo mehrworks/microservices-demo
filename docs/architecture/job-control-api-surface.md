@@ -56,10 +56,18 @@ This is an interface artifact only.
 - no frontend wiring is implied yet
 - no queue, scheduler, or Cloud Run path is introduced by this document alone
 
+The next implementation-facing boundary for this API is described in
+`docs/architecture/job-control-module-spec.md`.
+
+The matching persistence-facing boundary is described in
+`docs/architecture/job-control-storage-boundary.md`.
+
 ## Companion artifacts
 
 - `docs/architecture/hybrid-execution-model.md`
 - `docs/architecture/runtime-responsibility-matrix.md`
 - `docs/architecture/job-lifecycle-contract.md`
 - `docs/architecture/local-worker-agent.md`
+- `docs/architecture/job-control-module-spec.md`
+- `docs/architecture/job-control-storage-boundary.md`
 - `config/contracts/job-control/README.md`

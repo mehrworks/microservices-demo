@@ -1,0 +1,42 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/microservices-demo/job-control/job-store-record.schema.json",
+  "title": "Job store record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "job",
+    "revision",
+    "etag"
+  ],
+  "properties": {
+    "job": {
+      "$ref": "./job-record.schema.json"
+    },
+    "revision": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "etag": {
+      "type": "string",
+      "minLength": 1
+    },
+    "result_access": {
+      "oneOf": [
+        {
+          "$ref": "./result-access-record.schema.json"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "retention_expires_at": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date-time"
+    }
+  }
+}

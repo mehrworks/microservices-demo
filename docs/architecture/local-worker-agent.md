@@ -54,3 +54,6 @@ The worker is expected to treat the lease as authoritative.
 
 These rules are meant to keep the first control plane understandable before any
 queue, scheduler, or multi-worker complexity exists.
+
+The matching cloud-side implementation boundary is described in
+`docs/architecture/job-control-module-spec.md`.

@@ -1,0 +1,8 @@
+{
+  "error_code": "job_not_found",
+  "message": "job job_2026_04_05_0001 was not found",
+  "retryable": false,
+  "details": {
+    "job_id": "job_2026_04_05_0001"
+  }
+}

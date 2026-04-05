@@ -29,6 +29,10 @@ infra lane and the current app-first delivery model.
    - defines the first minimal cloud-side API shape for the hybrid control plane
 12. `local-worker-agent.md`
    - defines the first worker identity and lease assumptions for the hybrid phase
+13. `job-control-module-spec.md`
+   - defines the first implementation-facing module boundary for the cloud-side control plane
+14. `job-control-storage-boundary.md`
+   - defines the first persistence-facing boundary for the cloud-side control plane
 
 The local command companion for these docs is
 `docs/bootstrap/validate-infra-contracts.sh`.

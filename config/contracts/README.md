@@ -11,7 +11,7 @@ repo intends to implement.
 - `job-control/`
   - minimal cloud-side control-plane contract for the planned hybrid model
   - covers job submission, worker claim, status update, job record, result
-    reference, and a minimal API surface
+    reference, error envelope, and a minimal API surface
 
 ## Relationship to the rest of `config/`
 

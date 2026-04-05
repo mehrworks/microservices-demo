@@ -89,3 +89,7 @@ The first concrete API shape for this lifecycle is described in
 The first explicit worker/lease companion doc is:
 
 - `docs/architecture/local-worker-agent.md`
+
+The first persistence-facing companion doc is:
+
+- `docs/architecture/job-control-storage-boundary.md`

@@ -1,0 +1,23 @@
+{
+  "job_id": "job_2026_04_05_0001",
+  "expected_revision": 3,
+  "state": "succeeded",
+  "progress_percent": 100,
+  "status_message": "analysis complete",
+  "error_code": null,
+  "cancel_requested": false,
+  "lease": null,
+  "result_access": {
+    "result_ref": {
+      "kind": "local-file",
+      "uri": "file:///var/lib/msdemo/results/job_2026_04_05_0001/output.json",
+      "content_type": "application/json",
+      "size_bytes": 2048,
+      "checksum_sha256": "f5a5fd42d16a20302798ef6ed309979b43003d2320d9f0e8ea9831a92759fb4b"
+    },
+    "retrieval_mode": "reference-only",
+    "available": true,
+    "expires_at": "2026-04-06T08:10:00Z",
+    "size_bytes": 2048
+  }
+}

@@ -1,0 +1,51 @@
+{
+  "job": {
+    "job_id": "job_2026_04_05_0001",
+    "job_type": "local-analysis",
+    "submitted_by": "frontend-session-abc123",
+    "attempt": 1,
+    "state": "succeeded",
+    "submitted_at": "2026-04-05T08:00:00Z",
+    "updated_at": "2026-04-05T08:10:00Z",
+    "progress_percent": 100,
+    "status_message": "analysis complete",
+    "error_code": null,
+    "claimed_by": "local-worker-devbox-01",
+    "claimed_by_auth_subject": "worker:local-worker-devbox-01",
+    "lease": {
+      "lease_id": "lease_job_2026_04_05_0001_attempt_1",
+      "issued_at": "2026-04-05T08:00:00Z",
+      "lease_expires_at": "2026-04-05T08:05:00Z",
+      "lease_duration_seconds": 300,
+      "renew_after_seconds": 240
+    },
+    "cancel_requested": false,
+    "payload": {
+      "input_uri": "gs://example-inputs/demo/input.json",
+      "analysis_mode": "baseline"
+    },
+    "result_ref": {
+      "kind": "local-file",
+      "uri": "file:///var/lib/msdemo/results/job_2026_04_05_0001/output.json",
+      "content_type": "application/json",
+      "size_bytes": 2048,
+      "checksum_sha256": "f5a5fd42d16a20302798ef6ed309979b43003d2320d9f0e8ea9831a92759fb4b"
+    }
+  },
+  "revision": 4,
+  "etag": "job_2026_04_05_0001:r4",
+  "result_access": {
+    "result_ref": {
+      "kind": "local-file",
+      "uri": "file:///var/lib/msdemo/results/job_2026_04_05_0001/output.json",
+      "content_type": "application/json",
+      "size_bytes": 2048,
+      "checksum_sha256": "f5a5fd42d16a20302798ef6ed309979b43003d2320d9f0e8ea9831a92759fb4b"
+    },
+    "retrieval_mode": "reference-only",
+    "available": true,
+    "expires_at": "2026-04-06T08:10:00Z",
+    "size_bytes": 2048
+  },
+  "retention_expires_at": "2026-04-06T08:10:00Z"
+}

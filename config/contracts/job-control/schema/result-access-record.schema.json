@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/microservices-demo/job-control/result-access-record.schema.json",
+  "title": "Result access record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "result_ref",
+    "retrieval_mode",
+    "available"
+  ],
+  "properties": {
+    "result_ref": {
+      "$ref": "./result-reference.schema.json"
+    },
+    "retrieval_mode": {
+      "type": "string",
+      "enum": [
+        "reference-only",
+        "proxy-download",
+        "signed-url"
+      ]
+    },
+    "available": {
+      "type": "boolean"
+    },
+    "expires_at": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date-time"
+    },
+    "size_bytes": {
+      "type": "integer",
+      "minimum": 0
+    }
+  }
+}

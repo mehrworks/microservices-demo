@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/microservices-demo/job-control/error-envelope.schema.json",
+  "title": "Job control error envelope",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "error_code",
+    "message"
+  ],
+  "properties": {
+    "error_code": {
+      "type": "string",
+      "minLength": 1
+    },
+    "message": {
+      "type": "string",
+      "minLength": 1
+    },
+    "retryable": {
+      "type": "boolean"
+    },
+    "details": {
+      "type": "object"
+    }
+  }
+}
