@@ -4,7 +4,7 @@ This directory records the smallest environment bind needed for the active thin
 GKE exposure path:
 
 - public HTTP edge: `frontend` running in `catalog-only` mode
-- backing service: `productcatalogservice`
+- backing browsing services: `productcatalogservice` and `recommendationservice`
 - no DB, service mesh, or private-network requirement in the baseline proof
 
 ## Branch defaults
@@ -19,6 +19,7 @@ These values are branch defaults, not rediscovery items:
 - `frontend.service_name: frontend`
 - `frontend.public_service_name: frontend-external`
 - `productcatalogservice.service_name: productcatalogservice`
+- `recommendationservice.service_name: recommendationservice`
 
 ## Files
 

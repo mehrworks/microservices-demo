@@ -64,7 +64,8 @@
         "type": "string",
         "enum": [
           "frontend",
-          "productcatalogservice"
+          "productcatalogservice",
+          "recommendationservice"
         ]
       },
       "uniqueItems": true
@@ -107,6 +108,19 @@
       "required": [
         "service_name"
       ]
+    },
+    "recommendationservice": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "service_name": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "service_name"
+      ]
     }
   },
   "required": [
@@ -116,6 +130,7 @@
     "artifact_registry_repository",
     "proof",
     "frontend",
-    "productcatalogservice"
+    "productcatalogservice",
+    "recommendationservice"
   ]
 }

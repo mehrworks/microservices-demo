@@ -44,3 +44,4 @@ proof:
   frontend_local_port: 8081
   productcatalog_service_name: productcatalogservice
   productcatalog_local_port: 3550
+  recommendation_service_name: recommendationservice

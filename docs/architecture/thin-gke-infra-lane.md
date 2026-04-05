@@ -11,6 +11,7 @@ The active app slice is still:
 
 - `frontend` in `catalog-only` mode
 - `productcatalogservice`
+- `recommendationservice`
 
 That slice is still deployed through:
 

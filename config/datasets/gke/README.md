@@ -55,6 +55,7 @@ Runtime-proof fields:
 - `proof.grpc_mode`
 - `proof.frontend_*`
 - `proof.productcatalog_*`
+- `proof.recommendation_service_name`
 
 Those values bridge the staged infra lane to the active runtime proof bind and
 make the simple public path distinct from the org-constrained internal path.

@@ -3,8 +3,8 @@
 > **Dormant scaffold note**
 >
 > This document describes the original full-app release flow. On this branch,
-> the repository shape is preserved, but only `frontend` (catalog-only mode)
-> plus `productcatalogservice` are active in the current build/deploy loop.
+> the repository shape is preserved, but only `frontend` (catalog-only mode),
+> `productcatalogservice`, and `recommendationservice` are active in the current build/deploy loop.
 > Treat the rest of this document as retained release knowledge for later
 > reactivation, not as the current branch-default release path.
 

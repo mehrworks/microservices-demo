@@ -134,7 +134,12 @@ func main() {
 	mustMapEnv(&svc.productCatalogSvcAddr, "PRODUCT_CATALOG_SERVICE_ADDR")
 	mustConnGRPC(ctx, &svc.productCatalogSvcConn, svc.productCatalogSvcAddr)
 	if catalogOnlyModeEnabled() {
-		log.Info("catalog-only frontend mode enabled; only productcatalogservice is required")
+		log.Info("catalog-only frontend mode enabled; productcatalogservice is required and recommendationservice is optional")
+		if recommendationSvcAddr := os.Getenv("RECOMMENDATION_SERVICE_ADDR"); recommendationSvcAddr != "" {
+			svc.recommendationSvcAddr = recommendationSvcAddr
+			mustConnGRPC(ctx, &svc.recommendationSvcConn, svc.recommendationSvcAddr)
+			log.Info("recommendationservice enabled in catalog-only mode")
+		}
 	} else {
 		mustMapEnv(&svc.currencySvcAddr, "CURRENCY_SERVICE_ADDR")
 		mustMapEnv(&svc.cartSvcAddr, "CART_SERVICE_ADDR")

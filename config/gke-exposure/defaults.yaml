@@ -11,6 +11,7 @@ artifact_registry_repository: services
 active_services:
   - frontend
   - productcatalogservice
+  - recommendationservice
 
 frontend:
   mode: catalog-only
@@ -19,6 +20,9 @@ frontend:
 
 productcatalogservice:
   service_name: productcatalogservice
+
+recommendationservice:
+  service_name: recommendationservice
 
 proof:
   http_mode: public-load-balancer

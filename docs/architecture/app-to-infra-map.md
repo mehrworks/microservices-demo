@@ -7,7 +7,7 @@ infra lane fits around it.
 
 The current active app slice remains:
 
-`src/frontend` + `src/productcatalogservice` -> `skaffold.yaml` -> `kubernetes-manifests/` / `kustomize/` -> GKE cluster
+`src/frontend` + `src/productcatalogservice` + `src/recommendationservice` -> `skaffold.yaml` -> `kubernetes-manifests/` / `kustomize/` -> GKE cluster
 
 The existing proof bind for that runtime path stays under `config/gke-exposure/`.
 
@@ -35,6 +35,7 @@ flowchart LR
   subgraph app_layer[App / Delivery]
     FE[src/frontend]
     PC[src/productcatalogservice]
+    RC[src/recommendationservice]
     SK[skaffold.yaml]
     MAN[kubernetes-manifests / kustomize]
     BIND[config/gke-exposure]
@@ -58,6 +59,7 @@ flowchart LR
 
   FE --> SK
   PC --> SK
+  RC --> SK
   BIND --> SK
   SK --> MAN --> CLUSTER
 
@@ -73,6 +75,7 @@ flowchart LR
 
   FE:::app
   PC:::app
+  RC:::app
   SK:::app
   MAN:::app
   BIND:::config

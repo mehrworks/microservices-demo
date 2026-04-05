@@ -100,6 +100,7 @@ values = {
     "FRONTEND_LOCAL_PORT": str(proof_contract.get("frontend_local_port") or 8081),
     "PRODUCTCATALOG_SERVICE_NAME": proof_contract.get("productcatalog_service_name") or "productcatalogservice",
     "PRODUCTCATALOG_LOCAL_PORT": str(proof_contract.get("productcatalog_local_port") or 3550),
+    "RECOMMENDATION_SERVICE_NAME": proof_contract.get("recommendation_service_name") or "recommendationservice",
 }
 
 for key, value in values.items():
@@ -142,6 +143,9 @@ frontend:
 productcatalogservice:
   service_name: $PRODUCTCATALOG_SERVICE_NAME
 
+recommendationservice:
+  service_name: $RECOMMENDATION_SERVICE_NAME
+
 proof:
   http_mode: $HTTP_MODE
   grpc_mode: $GRPC_MODE
@@ -156,7 +160,7 @@ Proof commands for workspace ${WORKSPACE}:
 
 skaffold run --namespace "$NAMESPACE" --default-repo "$DEFAULT_REPO"
 
-kubectl wait --for=condition=available deployment/frontend deployment/productcatalogservice --timeout=600s -n "$NAMESPACE"
+kubectl wait --for=condition=available deployment/frontend deployment/productcatalogservice deployment/$RECOMMENDATION_SERVICE_NAME --timeout=600s -n "$NAMESPACE"
 EOF
 
 if [[ "$HTTP_MODE" == "public-load-balancer" ]]; then
@@ -165,6 +169,8 @@ if [[ "$HTTP_MODE" == "public-load-balancer" ]]; then
 kubectl get service $FRONTEND_PUBLIC_SERVICE_NAME -n "$NAMESPACE"
 
 curl -fsS "$FRONTEND_BASE_URL/" | grep "Catalog-only mode is active"
+
+curl -fsS "$FRONTEND_BASE_URL/product/OLJCESPC7Z" | grep "You May Also Like"
 EOF
 else
   cat <<EOF
@@ -172,6 +178,8 @@ else
 kubectl port-forward svc/$FRONTEND_SERVICE_NAME $FRONTEND_LOCAL_PORT:80 -n "$NAMESPACE"
 
 curl -fsS "$FRONTEND_BASE_URL/" | grep "Catalog-only mode is active"
+
+curl -fsS "$FRONTEND_BASE_URL/product/OLJCESPC7Z" | grep "You May Also Like"
 EOF
 fi
 

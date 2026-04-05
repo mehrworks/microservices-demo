@@ -18,7 +18,7 @@ const (
 	frontendModeFull        = frontendMode("full")
 	frontendModeCatalogOnly = frontendMode("catalog-only")
 
-	catalogOnlyModeNotice = "Catalog-only mode is active. Product browsing is available here while cart, checkout, and other multi-service flows stay disabled."
+	catalogOnlyModeNotice = "Catalog-only mode is active. Product browsing stays available while cart, checkout, and other multi-service flows stay disabled."
 )
 
 var activeFrontendMode = frontendModeFull
@@ -48,6 +48,10 @@ func cartFeatureEnabled() bool {
 
 func assistantFeatureEnabled() bool {
 	return assistantEnabled && !catalogOnlyModeEnabled()
+}
+
+func recommendationFeatureEnabled(fe *frontendServer) bool {
+	return fe != nil && fe.recommendationSvcConn != nil
 }
 
 func currentProductPrice(product *pb.Product) *pb.Money {

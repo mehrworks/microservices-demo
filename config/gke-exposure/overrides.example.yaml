@@ -21,6 +21,9 @@ frontend:
 productcatalogservice:
   service_name: productcatalogservice
 
+recommendationservice:
+  service_name: recommendationservice
+
 proof:
   http_mode: public-load-balancer
   grpc_mode: port-forward

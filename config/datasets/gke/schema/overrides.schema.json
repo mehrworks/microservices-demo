@@ -225,6 +225,12 @@
             "number",
             "null"
           ]
+        },
+        "recommendation_service_name": {
+          "type": [
+            "string",
+            "null"
+          ]
         }
       }
     }

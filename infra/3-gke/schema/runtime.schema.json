@@ -199,6 +199,9 @@
         },
         "productcatalog_local_port": {
           "type": "number"
+        },
+        "recommendation_service_name": {
+          "type": "string"
         }
       },
       "required": [
@@ -208,7 +211,8 @@
         "frontend_public_service_name",
         "frontend_local_port",
         "productcatalog_service_name",
-        "productcatalog_local_port"
+        "productcatalog_local_port",
+        "recommendation_service_name"
       ]
     }
   },

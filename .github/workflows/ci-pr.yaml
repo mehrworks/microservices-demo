@@ -14,8 +14,8 @@
 
 # Dormant scaffold note:
 # This branch keeps the original multi-service repo shape as reference, but only
-# `frontend` (catalog-only mode) and `productcatalogservice` are active in the
-# CI/deploy loop for now.
+# `frontend` (catalog-only mode), `productcatalogservice`, and
+# `recommendationservice` are active in the CI/deploy loop for now.
 # When you add or remove active services later, update this workflow together
 # with skaffold.yaml, kubernetes-manifests/kustomization.yaml,
 # kustomize/base/kustomization.yaml, and the service-specific waits/smoke checks
@@ -30,6 +30,7 @@ on:
     paths:
       - 'src/frontend/**'
       - 'src/productcatalogservice/**'
+      - 'src/recommendationservice/**'
       - 'skaffold.yaml'
       - 'kubernetes-manifests/**'
       - 'kustomize/base/**'
@@ -63,13 +64,14 @@ jobs:
     - name: Go Unit Tests
       timeout-minutes: 10
       run: |
-        # Dormant scaffold mode: only frontend + productcatalogservice stay active.
+        # Dormant scaffold mode: frontend + productcatalogservice + recommendationservice stay active.
         for GO_PACKAGE in "frontend" "productcatalogservice"; do
           echo "Testing $GO_PACKAGE..."
           pushd src/$GO_PACKAGE
           go test ./...
           popd
         done
+        python3 -m py_compile src/recommendationservice/*.py
         # Previously active in this workflow:
         # - shippingservice
         # - frontend/validator
@@ -108,7 +110,7 @@ jobs:
         echo Deploying application
         skaffold config set --global local-cluster false
         # Dormant scaffold mode: skip the full-app network-policies profile and
-        # deploy the thin public edge + productcatalogservice only.
+        # deploy the thin public edge + productcatalogservice + recommendationservice.
         skaffold run --default-repo=us-docker.pkg.dev/$PROJECT_ID/refs/pull/$PR_NUMBER --tag=$PR_NUMBER --namespace=$NAMESPACE
       env:
         ACTIONS_ALLOW_UNSECURE_COMMANDS: true
@@ -121,9 +123,10 @@ jobs:
       run: |
         set -x
         kubectl config set-context --current --namespace=$NAMESPACE
-        # Dormant scaffold mode: only frontend + productcatalogservice are expected here.
+        # Dormant scaffold mode: frontend + productcatalogservice + recommendationservice are expected here.
         kubectl wait --for=condition=available --timeout=1000s deployment/frontend
         kubectl wait --for=condition=available --timeout=1000s deployment/productcatalogservice
+        kubectl wait --for=condition=available --timeout=1000s deployment/recommendationservice
         # Previously active waits retained as commented history:
         # kubectl wait --for=condition=available --timeout=1000s deployment/redis-cart
         # kubectl wait --for=condition=available --timeout=1000s deployment/adservice
@@ -134,7 +137,6 @@ jobs:
         # kubectl wait --for=condition=available --timeout=1000s deployment/frontend
         # kubectl wait --for=condition=available --timeout=1000s deployment/loadgenerator
         # kubectl wait --for=condition=available --timeout=1000s deployment/paymentservice
-        # kubectl wait --for=condition=available --timeout=1000s deployment/recommendationservice
         # kubectl wait --for=condition=available --timeout=1000s deployment/shippingservice
     - name: Smoke Test Catalog Frontend
       timeout-minutes: 10
@@ -158,6 +160,8 @@ jobs:
         curl -fsS http://127.0.0.1:18080/ >/tmp/frontend-home.html
         grep -q "Catalog-only mode is active" /tmp/frontend-home.html
         grep -q "Hot Products" /tmp/frontend-home.html
+        curl -fsS http://127.0.0.1:18080/product/OLJCESPC7Z >/tmp/frontend-product.html
+        grep -q "You May Also Like" /tmp/frontend-product.html
     # Dormant scaffold mode: the old staging/comment steps depended on a broader
     # full-app public surface. Keep them as commented history until that surface
     # returns to the active loop.

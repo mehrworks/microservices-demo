@@ -15,6 +15,7 @@ manual_approval_required: true
 included_paths:
   - src/frontend/**
   - src/productcatalogservice/**
+  - src/recommendationservice/**
   - kubernetes-manifests/**
   - kustomize/**
   - config/gke-exposure/**

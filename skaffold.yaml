@@ -24,15 +24,16 @@ build:
   # here:
   # https://skaffold.dev/docs/concepts/#image-repository-handling
   # Dormant scaffold mode keeps the repo shape intact, but the active loop is
-  # now a thin public edge (`frontend`) plus `productcatalogservice`.
+  # now a thin public edge (`frontend`) plus `productcatalogservice` and
+  # `recommendationservice`.
   # - image: emailservice
   #   context: src/emailservice
   - image: frontend
     context: src/frontend
   - image: productcatalogservice
     context: src/productcatalogservice
-  # - image: recommendationservice
-  #   context: src/recommendationservice
+  - image: recommendationservice
+    context: src/recommendationservice
   # - image: shoppingassistantservice
   #   context: src/shoppingassistantservice
   # - image: shippingservice

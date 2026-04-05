@@ -25,8 +25,9 @@ Find **Protocol Buffers Descriptions** at the [`./protos` directory](/protos).
 > **Dormant scaffold branch note**
 >
 > On `spike/dormant-scaffold-v2`, the full multi-service repo shape is kept as
-> reference, but only `frontend` (running in `catalog-only` mode) and
-> `productcatalogservice` are active in the current build, deploy, and CI loop.
+> reference, but only `frontend` (running in `catalog-only` mode),
+> `productcatalogservice`, and `recommendationservice` are active in the
+> current build, deploy, and CI loop.
 > Runtime defaults for that thin public path are controlled at the manifest
 > layer so vendor source can stay close to upstream until a real fork/rename of
 > the services happens. See [`docs/dormant-scaffold.md`](/docs/dormant-scaffold.md)
@@ -60,7 +61,8 @@ Find **Protocol Buffers Descriptions** at the [`./protos` directory](/protos).
 >
 > On `spike/dormant-scaffold-v2`, `./release/kubernetes-manifests.yaml` is
 > intentionally narrowed to a thin public path: `frontend` in `catalog-only`
-> mode plus `productcatalogservice`. The working branch proof uses
+> mode plus `productcatalogservice` and `recommendationservice`. The working
+> branch proof uses
 > `skaffold run`, not the direct `kubectl apply` step below, because Skaffold is
 > what rewrites the active image references for this branch. See
 > [`docs/dormant-scaffold.md`](/docs/dormant-scaffold.md) for the branch-specific

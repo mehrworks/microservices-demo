@@ -3,7 +3,8 @@
 > **Dormant scaffold note**
 >
 > This branch keeps the original multi-service repo shape as reference, but only
-> `frontend` (catalog-only mode) and `productcatalogservice` are active in the
+> `frontend` (catalog-only mode), `productcatalogservice`, and
+> `recommendationservice` are active in the
 > current CI/deploy loop. The older full-app workflow steps remain in the
 > workflow YAML files as commented history. When you add or remove active
 > services later, update the workflow files together with `skaffold.yaml`,
@@ -15,7 +16,7 @@ This page describes the CI/CD workflows for the Online Boutique app, which run i
 
 On `spike/dormant-scaffold-v2`, treat the rest of this document as **historical full-app workflow reference**. The current active branch behavior is narrower:
 
-- `frontend` and `productcatalogservice` are active in CI/deploy waits
+- `frontend`, `productcatalogservice`, and `recommendationservice` are active in CI/deploy waits
 - CI smoke tests now verify the catalog-only frontend via port-forward
 - full-app staging/comment behavior stays preserved in workflow YAML as commented history
 - infra/config contract changes now have a separate non-GKE validation lane in `infra-contracts.yaml`
@@ -59,7 +60,7 @@ These tests run on every commit for every open PR, as well as any commit to main
 1. Creates a dedicated GKE namespace for that PR, if it doesn't already exist, in the PR GKE cluster.
 2. Uses `skaffold run` to build and push the images specific to that PR commit. Then skaffold deploys those images, via `kubernetes-manifests`, to the PR namespace in the test cluster.
 3. Tests to make sure the active pods start up and become ready.
-4. Port-forwards the internal `frontend` service and verifies the catalog-only home page loads.
+4. Port-forwards the internal `frontend` service, verifies the catalog-only home page loads, and checks that product-page recommendations render.
 
 ### Push and Deploy Latest - [push-deploy](push-deploy.yml)
 

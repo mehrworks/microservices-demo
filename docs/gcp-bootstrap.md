@@ -11,7 +11,7 @@ layer and does not replace the Skaffold proof flow yet.
 This branch's active proof scope is intentionally small:
 
 - public HTTP edge: `frontend` in `catalog-only` mode
-- backing service: `productcatalogservice`
+- backing browsing services: `productcatalogservice` and `recommendationservice`
 - no DB, mesh, or private-network requirement in the baseline proof
 
 ## Branch defaults
@@ -180,6 +180,7 @@ kubectl wait \
   --for=condition=available \
   deployment/frontend \
   deployment/productcatalogservice \
+  deployment/recommendationservice \
   --timeout=600s \
   -n "$NAMESPACE"
 ```
@@ -196,11 +197,18 @@ Then run the public HTTP proof:
 curl -fsS "http://EXTERNAL_IP/" | grep "Catalog-only mode is active"
 ```
 
+Then confirm the recommendation surface on a product page:
+
+```bash
+curl -fsS "http://EXTERNAL_IP/product/OLJCESPC7Z" | grep "You May Also Like"
+```
+
 For `proof.http_mode: port-forward`, use the internal HTTP proof instead:
 
 ```bash
 kubectl port-forward svc/frontend 8081:80 -n "$NAMESPACE"
 curl -fsS "http://127.0.0.1:8081/" | grep "Catalog-only mode is active"
+curl -fsS "http://127.0.0.1:8081/product/OLJCESPC7Z" | grep "You May Also Like"
 ```
 
 gRPC proof:

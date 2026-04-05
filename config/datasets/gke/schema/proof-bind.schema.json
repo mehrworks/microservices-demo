@@ -194,6 +194,9 @@
         },
         "productcatalog_local_port": {
           "type": "number"
+        },
+        "recommendation_service_name": {
+          "type": "string"
         }
       }
     }

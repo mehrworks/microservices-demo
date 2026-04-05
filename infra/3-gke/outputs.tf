@@ -72,5 +72,6 @@ output "proof_contract" {
     frontend_local_port          = try(local.config.proof.frontend_local_port, 8081)
     productcatalog_service_name  = try(local.config.proof.productcatalog_service_name, "productcatalogservice")
     productcatalog_local_port    = try(local.config.proof.productcatalog_local_port, 3550)
+    recommendation_service_name  = try(local.config.proof.recommendation_service_name, "recommendationservice")
   }
 }

@@ -197,13 +197,15 @@ func (fe *frontendServer) productHandler(w http.ResponseWriter, r *http.Request)
 			renderHTTPError(log, r, w, errors.Wrap(err, "failed to convert currency"), http.StatusInternalServerError)
 			return
 		}
+		ad = fe.chooseAd(r.Context(), p.Categories, log)
+	}
 
+	if recommendationFeatureEnabled(fe) {
 		// ignores the error retrieving recommendations since it is not critical
 		recommendations, err = fe.getRecommendations(r.Context(), sessionID(r), []string{id})
 		if err != nil {
 			log.WithField("error", err).Warn("failed to get product recommendations")
 		}
-		ad = fe.chooseAd(r.Context(), p.Categories, log)
 	}
 
 	product := struct {

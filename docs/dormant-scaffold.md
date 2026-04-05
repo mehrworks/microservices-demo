@@ -2,7 +2,7 @@
 
 > Branch context: `spike/dormant-scaffold-v2`
 
-This branch keeps the original multi-service repository shape intact as a **reference scaffold**, while narrowing the **active loop** to a thin public path: `frontend` in `catalog-only` mode plus `productcatalogservice`.
+This branch keeps the original multi-service repository shape intact as a **reference scaffold**, while narrowing the **active loop** to a thin public path: `frontend` in `catalog-only` mode plus `productcatalogservice` and `recommendationservice`.
 
 The goal is to preserve the old service bodies, deployment layout, CI history, and release knowledge so services can be reactivated or replaced gradually later, without prematurely rewriting the whole repo around one service.
 
@@ -10,21 +10,21 @@ The goal is to preserve the old service bodies, deployment layout, CI history, a
 
 ### Active right now
 
-`frontend` and `productcatalogservice` are active in the current loop.
+`frontend`, `productcatalogservice`, and `recommendationservice` are active in the current loop.
 
 That currently means:
 
 - `skaffold.yaml`
-  - only `frontend` and `productcatalogservice` are active
+  - `frontend`, `productcatalogservice`, and `recommendationservice` are active
   - other service artifacts remain in place as commented history
 - `kubernetes-manifests/kustomization.yaml`
-  - only `frontend.yaml` and `productcatalogservice.yaml` are active
+  - `frontend.yaml`, `productcatalogservice.yaml`, and `recommendationservice.yaml` are active
 - `kustomize/base/kustomization.yaml`
-  - only `frontend.yaml` and `productcatalogservice.yaml` are active
+  - `frontend.yaml`, `productcatalogservice.yaml`, and `recommendationservice.yaml` are active
 - `release/kubernetes-manifests.yaml`
   - narrowed so the active public path stays synchronized in one release reference file, even though direct `kubectl apply -f` still needs image rewriting first
 - `.github/workflows/ci-main.yaml`
-  - only `frontend` and `productcatalogservice` are tested/deployed/waited on
+  - `frontend`, `productcatalogservice`, and `recommendationservice` are tested/deployed/waited on
   - older full-app flow is preserved as comments
 - `.github/workflows/ci-pr.yaml`
   - same idea for PR flow
@@ -36,8 +36,9 @@ For the active services on this branch, runtime behavior is controlled at the **
 Current manifest policy:
 
 - `frontend` runs with `FRONTEND_MODE=catalog-only`
-- `frontend` keeps only `PRODUCT_CATALOG_SERVICE_ADDR` in the active env surface
-- profiler is off via `DISABLE_PROFILER=1` for `productcatalogservice` and `ENABLE_PROFILER=0` for `frontend`
+- `frontend` keeps `PRODUCT_CATALOG_SERVICE_ADDR` and `RECOMMENDATION_SERVICE_ADDR` in the active browsing env surface
+- product-page recommendations are active when `RECOMMENDATION_SERVICE_ADDR` is configured
+- profiler is off via `DISABLE_PROFILER=1` for `productcatalogservice` and `recommendationservice`, and `ENABLE_PROFILER=0` for `frontend`
 - tracing is off because `ENABLE_TRACING` is omitted
 - AlloyDB remains dormant unless its environment is explicitly wired in later
 
@@ -99,7 +100,7 @@ but the supported bootstrap proof path is the Skaffold-driven one:
 Prove all of the following with the smallest possible scope:
 
 1. the repo branch deploys into a GCP project
-2. only `frontend` and `productcatalogservice` are active
+2. only `frontend`, `productcatalogservice`, and `recommendationservice` are active
 3. the public frontend becomes reachable
 4. one real gRPC request succeeds
 
@@ -109,7 +110,7 @@ This is intentionally **not** a full app deployment.
 
 - one small GKE cluster
 - one Artifact Registry repo
-- two active services: `frontend` and `productcatalogservice`
+- three active services: `frontend`, `productcatalogservice`, and `recommendationservice`
 - one public HTTP validation call to the catalog-only frontend
 - one gRPC validation call: `ListProducts`
 
@@ -258,7 +259,7 @@ skaffold run -p gcb \
 ```
 
 Because this branch comments out the other services in the active loop, either
-path should only build and deploy `frontend` plus `productcatalogservice`.
+path should only build and deploy `frontend`, `productcatalogservice`, and `recommendationservice`.
 
 ### 5) Wait for readiness
 
@@ -282,6 +283,14 @@ kubectl wait \
   -n "$NAMESPACE"
 ```
 
+```bash
+kubectl wait \
+  --for=condition=available \
+  deployment/recommendationservice \
+  --timeout=600s \
+  -n "$NAMESPACE"
+```
+
 Check logs:
 
 ```bash
@@ -290,6 +299,10 @@ kubectl logs deployment/frontend -n "$NAMESPACE" --tail=100
 
 ```bash
 kubectl logs deployment/productcatalogservice -n "$NAMESPACE" --tail=100
+```
+
+```bash
+kubectl logs deployment/recommendationservice -n "$NAMESPACE" --tail=100
 ```
 
 ### 6) Make one public HTTP proof call
@@ -370,7 +383,9 @@ This proof is successful if:
 - the cluster exists
 - `frontend` becomes `Available`
 - `productcatalogservice` becomes `Available`
+- `recommendationservice` becomes `Available`
 - the public frontend is reachable
+- the product page shows recommendations
 - logs look healthy
 - `ListProducts` returns data
 

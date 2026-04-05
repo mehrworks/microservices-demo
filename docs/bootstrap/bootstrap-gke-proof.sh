@@ -155,11 +155,13 @@ Proof commands:
 
 skaffold run --namespace "$NAMESPACE" --default-repo "$DEFAULT_REPO"
 
-kubectl wait --for=condition=available deployment/frontend deployment/productcatalogservice --timeout=600s -n "$NAMESPACE"
+kubectl wait --for=condition=available deployment/frontend deployment/productcatalogservice deployment/recommendationservice --timeout=600s -n "$NAMESPACE"
 
 kubectl get service frontend-external -n "$NAMESPACE"
 
 curl -fsS "http://EXTERNAL_IP/" | grep "Catalog-only mode is active"
+
+curl -fsS "http://EXTERNAL_IP/product/OLJCESPC7Z" | grep "You May Also Like"
 
 kubectl port-forward svc/productcatalogservice 3550:3550 -n "$NAMESPACE"
 

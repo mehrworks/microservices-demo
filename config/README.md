@@ -23,7 +23,7 @@ config/
 Guidance:
 
 - `config/gke-exposure/` remains the active human-reviewed proof bind for the
-  current `frontend` + `productcatalogservice` slice.
+  current `frontend` + `productcatalogservice` + `recommendationservice` slice.
 - `config/datasets/` holds the new staged infra inputs for `infra/1-project`,
   `infra/2-iam`, `infra/3-gke`, and `infra/4-ci`.
 - `config/profiles/` groups those dataset examples into reviewable environment bundles.

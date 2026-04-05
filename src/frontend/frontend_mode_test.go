@@ -4,6 +4,8 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	"google.golang.org/grpc"
 )
 
 func TestParseFrontendMode(t *testing.T) {
@@ -67,4 +69,18 @@ func TestCurrentCurrencyRespectsCookieInFullMode(t *testing.T) {
 	if got := currentCurrency(req); got != "EUR" {
 		t.Fatalf("currentCurrency() = %q, want %q", got, "EUR")
 	}
+}
+
+func TestRecommendationFeatureEnabled(t *testing.T) {
+	t.Run("disabled without connection", func(t *testing.T) {
+		if recommendationFeatureEnabled(&frontendServer{}) {
+			t.Fatal("recommendationFeatureEnabled() = true, want false")
+		}
+	})
+
+	t.Run("enabled with connection", func(t *testing.T) {
+		if !recommendationFeatureEnabled(&frontendServer{recommendationSvcConn: &grpc.ClientConn{}}) {
+			t.Fatal("recommendationFeatureEnabled() = false, want true")
+		}
+	})
 }

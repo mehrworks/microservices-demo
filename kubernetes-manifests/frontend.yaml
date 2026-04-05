@@ -66,15 +66,18 @@ spec:
           env:
           # Dormant scaffold note:
           # This branch activates frontend as a thin public edge in catalog-only
-          # mode. Keep the broader full-app env surface dormant unless the
-          # matching services are reactivated together across skaffold,
-          # manifests, release YAML, CI, and docs.
+          # mode. Recommendationservice is now back in the active browsing path.
+          # Keep the broader full-app env surface dormant unless the matching
+          # services are reactivated together across skaffold, manifests, release
+          # YAML, CI, and docs.
           - name: PORT
             value: "8080"
           - name: FRONTEND_MODE
             value: "catalog-only"
           - name: PRODUCT_CATALOG_SERVICE_ADDR
             value: "productcatalogservice:3550"
+          - name: RECOMMENDATION_SERVICE_ADDR
+            value: "recommendationservice:8080"
           - name: ENABLE_PROFILER
             value: "0"
           # Dormant full-app frontend env history:
@@ -82,8 +85,6 @@ spec:
           #   value: "currencyservice:7000"
           # - name: CART_SERVICE_ADDR
           #   value: "cartservice:7070"
-          # - name: RECOMMENDATION_SERVICE_ADDR
-          #   value: "recommendationservice:8080"
           # - name: SHIPPING_SERVICE_ADDR
           #   value: "shippingservice:50051"
           # - name: CHECKOUT_SERVICE_ADDR
