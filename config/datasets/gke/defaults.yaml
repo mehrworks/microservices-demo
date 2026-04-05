@@ -35,3 +35,12 @@ hardening:
   master_ipv4_cidr: null
   cloud_nat_enabled: false
   public_load_balancer_enabled: true
+
+proof:
+  http_mode: public-load-balancer
+  grpc_mode: port-forward
+  frontend_service_name: frontend
+  frontend_public_service_name: frontend-external
+  frontend_local_port: 8081
+  productcatalog_service_name: productcatalogservice
+  productcatalog_local_port: 3550

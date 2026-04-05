@@ -73,6 +73,11 @@ The current recommended staged-infra default remains the placeholder profile.
 Keep the trigger-enabled profile for later CI provisioning work, not for the
 current repo-shape pass.
 
+Current workspace convention:
+
+- `default` for the simple sandbox/public environment
+- `org-constrained` for the stricter org-managed environment
+
 ## Later real-GKE pass order
 
 When the repo-shape work is far enough along to do a dedicated real-GKE pass,
@@ -92,13 +97,13 @@ first runtime regression, then the constrained account for the stronger follow-u
 ## Validation commands
 
 ```bash
-./docs/bootstrap/staged-infra-cycle.sh
+./docs/bootstrap/staged-infra-cycle.sh --workspace default
 
 # or target individual stages:
-./docs/bootstrap/staged-infra-cycle.sh 1-project 2-iam
+./docs/bootstrap/staged-infra-cycle.sh --workspace org-constrained 1-project 2-iam
 
 # export stage contracts when readable state exists:
-./docs/bootstrap/export-stage-contracts.sh
+./docs/bootstrap/export-stage-contracts.sh --workspace default
 ```
 
 The export helper is optional during the repo-shape pass. It becomes useful after
@@ -107,7 +112,13 @@ real applies exist and you want local JSON snapshots of the emitted stage contra
 If you want validation without export, use:
 
 ```bash
-./docs/bootstrap/staged-infra-cycle.sh --skip-export
+./docs/bootstrap/staged-infra-cycle.sh --workspace default --skip-export
+```
+
+Once stage exports exist, render the runtime proof bind with:
+
+```bash
+./docs/bootstrap/render-gke-proof-bind.sh --workspace default
 ```
 
 For remote backend migration later, render local `*.tfbackend` files from the

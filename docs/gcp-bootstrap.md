@@ -127,6 +127,13 @@ Set:
 The branch defaults for region, repo, cluster, namespace, and service names are
 already encoded in the example file.
 
+If staged outputs already exist, you can render this local proof bind from them
+instead:
+
+```bash
+./docs/bootstrap/render-gke-proof-bind.sh --workspace default
+```
+
 ## Prepare the cluster for the proof
 
 Once the cluster exists and credentials work, run:
@@ -163,6 +170,9 @@ skaffold run \
 
 ## Verify the proof
 
+The exact HTTP verification path depends on `proof.http_mode` in the rendered
+`config/gke-exposure/overrides.yaml` bind.
+
 Wait for the active deployments:
 
 ```bash
@@ -174,16 +184,23 @@ kubectl wait \
   -n "$NAMESPACE"
 ```
 
-Wait for the public IP:
+For `proof.http_mode: public-load-balancer`, wait for the public IP:
 
 ```bash
 kubectl get service frontend-external -n "$NAMESPACE"
 ```
 
-HTTP proof:
+Then run the public HTTP proof:
 
 ```bash
 curl -fsS "http://EXTERNAL_IP/" | grep "Catalog-only mode is active"
+```
+
+For `proof.http_mode: port-forward`, use the internal HTTP proof instead:
+
+```bash
+kubectl port-forward svc/frontend 8081:80 -n "$NAMESPACE"
+curl -fsS "http://127.0.0.1:8081/" | grep "Catalog-only mode is active"
 ```
 
 gRPC proof:

@@ -96,6 +96,22 @@
           "const": false
         }
       }
+    },
+    "proof": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "http_mode",
+        "grpc_mode"
+      ],
+      "properties": {
+        "http_mode": {
+          "const": "port-forward"
+        },
+        "grpc_mode": {
+          "const": "port-forward"
+        }
+      }
     }
   }
 }

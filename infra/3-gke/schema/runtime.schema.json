@@ -167,6 +167,49 @@
         "cloud_nat_enabled",
         "public_load_balancer_enabled"
       ]
+    },
+    "proof": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "http_mode": {
+          "type": "string",
+          "enum": [
+            "public-load-balancer",
+            "port-forward"
+          ]
+        },
+        "grpc_mode": {
+          "type": "string",
+          "enum": [
+            "port-forward"
+          ]
+        },
+        "frontend_service_name": {
+          "type": "string"
+        },
+        "frontend_public_service_name": {
+          "type": "string"
+        },
+        "frontend_local_port": {
+          "type": "number"
+        },
+        "productcatalog_service_name": {
+          "type": "string"
+        },
+        "productcatalog_local_port": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "http_mode",
+        "grpc_mode",
+        "frontend_service_name",
+        "frontend_public_service_name",
+        "frontend_local_port",
+        "productcatalog_service_name",
+        "productcatalog_local_port"
+      ]
     }
   },
   "required": [
@@ -175,6 +218,7 @@
     "artifact_registry",
     "cluster",
     "network",
-    "hardening"
+    "hardening",
+    "proof"
   ]
 }

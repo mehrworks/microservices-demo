@@ -65,6 +65,25 @@
           "type": "boolean"
         }
       }
+    },
+    "proof": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "http_mode": {
+          "type": "string",
+          "enum": [
+            "public-load-balancer",
+            "port-forward"
+          ]
+        },
+        "grpc_mode": {
+          "type": "string",
+          "enum": [
+            "port-forward"
+          ]
+        }
+      }
     }
   }
 }

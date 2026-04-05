@@ -34,6 +34,9 @@
     },
     "hardening": {
       "$ref": "#/defs/hardening"
+    },
+    "proof": {
+      "$ref": "#/defs/proof"
     }
   },
   "defs": {
@@ -157,6 +160,40 @@
         },
         "public_load_balancer_enabled": {
           "type": "boolean"
+        }
+      }
+    },
+    "proof": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "http_mode": {
+          "type": "string",
+          "enum": [
+            "public-load-balancer",
+            "port-forward"
+          ]
+        },
+        "grpc_mode": {
+          "type": "string",
+          "enum": [
+            "port-forward"
+          ]
+        },
+        "frontend_service_name": {
+          "type": "string"
+        },
+        "frontend_public_service_name": {
+          "type": "string"
+        },
+        "frontend_local_port": {
+          "type": "number"
+        },
+        "productcatalog_service_name": {
+          "type": "string"
+        },
+        "productcatalog_local_port": {
+          "type": "number"
         }
       }
     }

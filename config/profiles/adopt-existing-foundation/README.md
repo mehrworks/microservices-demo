@@ -16,3 +16,7 @@ repo mainly needs to declare the contracts around it.
 - identities already exist
 - Artifact Registry repo and cluster already exist
 - repo-shape validation without provisioning ownership drift
+
+Recommended workspace:
+
+- choose an explicit environment-specific workspace rather than reusing another bundle's state by accident

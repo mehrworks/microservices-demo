@@ -62,5 +62,8 @@ and `docs/bootstrap/staged-infra-cycle.sh`.
 For local exported stage snapshots after state exists, use
 `docs/bootstrap/export-stage-contracts.sh`.
 
+For rendering the local runtime proof bind from staged outputs, use
+`docs/bootstrap/render-gke-proof-bind.sh`.
+
 For local backend file rendering once a real state bucket exists, use
 `docs/bootstrap/render-tfbackends.sh`.

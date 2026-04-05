@@ -34,7 +34,7 @@ environment shape first, then copy the matching dataset examples into local
    ```
 
    Use `--dry-run` to inspect the copy plan first.
-4. run `./docs/bootstrap/staged-infra-cycle.sh`
+4. run `./docs/bootstrap/staged-infra-cycle.sh --workspace <workspace>` using the profile's recommended workspace
 
 Bundle validation helper:
 

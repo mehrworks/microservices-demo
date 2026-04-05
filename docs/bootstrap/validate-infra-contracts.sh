@@ -2,16 +2,18 @@
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+WORKSPACE=""
 
 usage() {
   cat <<'EOF'
 Usage:
 
-  ./docs/bootstrap/validate-infra-contracts.sh [all|1-project|2-iam|3-gke|4-ci ...]
+  ./docs/bootstrap/validate-infra-contracts.sh [--workspace NAME] [all|1-project|2-iam|3-gke|4-ci ...]
 
 Examples:
 
   ./docs/bootstrap/validate-infra-contracts.sh
+  ./docs/bootstrap/validate-infra-contracts.sh --workspace sandbox-public
   ./docs/bootstrap/validate-infra-contracts.sh 3-gke
   ./docs/bootstrap/validate-infra-contracts.sh 1-project 2-iam
 
@@ -48,6 +50,20 @@ resolve_stage() {
   esac
 }
 
+ensure_workspace() {
+  local stage="$1"
+
+  [[ -n "$WORKSPACE" ]] || return 0
+
+  if terraform -chdir="$stage" workspace select "$WORKSPACE" >/dev/null 2>&1; then
+    log "selected workspace ${WORKSPACE} for ${stage}"
+    return 0
+  fi
+
+  terraform -chdir="$stage" workspace new "$WORKSPACE" >/dev/null
+  log "created workspace ${WORKSPACE} for ${stage}"
+}
+
 need_cmd terraform
 
 cd "$ROOT_DIR"
@@ -58,6 +74,19 @@ if [[ "${1:-all}" == "-h" || "${1:-all}" == "--help" ]]; then
 fi
 
 declare -a stages
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --workspace)
+      WORKSPACE="${2:-}"
+      [[ -n "$WORKSPACE" ]] || die "--workspace requires a value"
+      shift 2
+      ;;
+    *)
+      break
+      ;;
+  esac
+done
 
 if [[ $# -eq 0 || "$1" == "all" ]]; then
   stages=(
@@ -81,6 +110,8 @@ log "validating profile bundles"
 for stage in "${stages[@]}"; do
   log "initializing ${stage}"
   terraform -chdir="$stage" init -backend=false -input=false
+
+  ensure_workspace "$stage"
 
   log "validating ${stage}"
   terraform -chdir="$stage" validate

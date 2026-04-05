@@ -13,3 +13,7 @@ hardening:
   master_ipv4_cidr: null
   cloud_nat_enabled: false
   public_load_balancer_enabled: true
+
+proof:
+  http_mode: public-load-balancer
+  grpc_mode: port-forward

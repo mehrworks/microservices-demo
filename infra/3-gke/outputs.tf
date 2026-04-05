@@ -61,3 +61,16 @@ output "network_contract" {
     services_secondary_range_name = try(local.config.network.services_secondary_range_name, null)
   }
 }
+
+output "proof_contract" {
+  description = "Runtime proof contract derived from the staged GKE dataset."
+  value = {
+    http_mode                    = try(local.config.proof.http_mode, "public-load-balancer")
+    grpc_mode                    = try(local.config.proof.grpc_mode, "port-forward")
+    frontend_service_name        = try(local.config.proof.frontend_service_name, "frontend")
+    frontend_public_service_name = try(local.config.proof.frontend_public_service_name, "frontend-external")
+    frontend_local_port          = try(local.config.proof.frontend_local_port, 8081)
+    productcatalog_service_name  = try(local.config.proof.productcatalog_service_name, "productcatalogservice")
+    productcatalog_local_port    = try(local.config.proof.productcatalog_local_port, 3550)
+  }
+}

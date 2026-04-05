@@ -25,3 +25,7 @@ hardening:
   master_ipv4_cidr: 172.16.0.0/28
   cloud_nat_enabled: true
   public_load_balancer_enabled: false
+
+proof:
+  http_mode: port-forward
+  grpc_mode: port-forward

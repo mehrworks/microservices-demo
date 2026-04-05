@@ -3,16 +3,18 @@ set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 SKIP_EXPORT="false"
+WORKSPACE=""
 
 usage() {
   cat <<'EOF'
 Usage:
 
-  ./docs/bootstrap/staged-infra-cycle.sh [--skip-export] [all|1-project|2-iam|3-gke|4-ci ...]
+  ./docs/bootstrap/staged-infra-cycle.sh [--skip-export] [--workspace NAME] [all|1-project|2-iam|3-gke|4-ci ...]
 
 Examples:
 
   ./docs/bootstrap/staged-infra-cycle.sh
+  ./docs/bootstrap/staged-infra-cycle.sh --workspace sandbox-public
   ./docs/bootstrap/staged-infra-cycle.sh 3-gke
   ./docs/bootstrap/staged-infra-cycle.sh --skip-export 1-project 2-iam
 
@@ -35,6 +37,14 @@ while [[ $# -gt 0 ]]; do
       SKIP_EXPORT="true"
       shift
       ;;
+    --workspace)
+      WORKSPACE="${2:-}"
+      [[ -n "$WORKSPACE" ]] || {
+        printf 'error: --workspace requires a value\n' >&2
+        exit 1
+      }
+      shift 2
+      ;;
     -h|--help)
       usage
       exit 0
@@ -53,7 +63,11 @@ if [[ ${#stages[@]} -eq 0 ]]; then
 fi
 
 log "running staged infra validation"
-./docs/bootstrap/validate-infra-contracts.sh "${stages[@]}"
+if [[ -n "$WORKSPACE" ]]; then
+  ./docs/bootstrap/validate-infra-contracts.sh --workspace "$WORKSPACE" "${stages[@]}"
+else
+  ./docs/bootstrap/validate-infra-contracts.sh "${stages[@]}"
+fi
 
 if [[ "$SKIP_EXPORT" == "true" ]]; then
   log "skipping stage contract export"
@@ -61,6 +75,10 @@ if [[ "$SKIP_EXPORT" == "true" ]]; then
 fi
 
 log "exporting stage contracts when state exists"
-./docs/bootstrap/export-stage-contracts.sh "${stages[@]}"
+if [[ -n "$WORKSPACE" ]]; then
+  ./docs/bootstrap/export-stage-contracts.sh --workspace "$WORKSPACE" "${stages[@]}"
+else
+  ./docs/bootstrap/export-stage-contracts.sh "${stages[@]}"
+fi
 
 log "staged infra cycle complete"

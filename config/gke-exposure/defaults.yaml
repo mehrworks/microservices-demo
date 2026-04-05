@@ -19,3 +19,9 @@ frontend:
 
 productcatalogservice:
   service_name: productcatalogservice
+
+proof:
+  http_mode: public-load-balancer
+  grpc_mode: port-forward
+  frontend_local_port: 8081
+  productcatalog_local_port: 3550

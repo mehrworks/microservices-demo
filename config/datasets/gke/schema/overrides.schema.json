@@ -39,6 +39,9 @@
     },
     "hardening": {
       "$ref": "#/defs/hardening"
+    },
+    "proof": {
+      "$ref": "#/defs/proof"
     }
   },
   "defs": {
@@ -174,6 +177,54 @@
         },
         "public_load_balancer_enabled": {
           "type": "boolean"
+        }
+      }
+    },
+    "proof": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "http_mode": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "grpc_mode": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "frontend_service_name": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "frontend_public_service_name": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "frontend_local_port": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "productcatalog_service_name": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "productcatalog_local_port": {
+          "type": [
+            "number",
+            "null"
+          ]
         }
       }
     }

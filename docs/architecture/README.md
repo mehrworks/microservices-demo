@@ -27,6 +27,9 @@ The default wrapper for the local repo-shape loop is
 After real state exists, `docs/bootstrap/export-stage-contracts.sh` can snapshot
 emitted contracts into `config/stages/*/outputs/`.
 
+After stage exports exist, `docs/bootstrap/render-gke-proof-bind.sh` can render
+the active local runtime proof bind from those staged outputs.
+
 After a real state bucket exists, `docs/bootstrap/render-tfbackends.sh` can
 materialize local `config/backends/*.tfbackend` files from the tracked examples.
 

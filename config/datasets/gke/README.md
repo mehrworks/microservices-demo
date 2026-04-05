@@ -8,6 +8,7 @@ It defines the app repo's cloud-facing baseline:
 - Autopilot cluster contract
 - namespace default
 - placeholder hardening knobs for org-managed environments
+- runtime proof-mode contract for public vs internal verification
 
 The active human-reviewed proof bind for the currently deployed app slice still
 lives under `config/gke-exposure/`. This dataset focuses on infrastructure, not
@@ -48,6 +49,16 @@ Placeholder-only hardening fields:
 Keep those placeholder fields off until a target environment actually requires
 them.
 
+Runtime-proof fields:
+
+- `proof.http_mode`
+- `proof.grpc_mode`
+- `proof.frontend_*`
+- `proof.productcatalog_*`
+
+Those values bridge the staged infra lane to the active runtime proof bind and
+make the simple public path distinct from the org-constrained internal path.
+
 ## Workflow
 
 1. copy the example file to `overrides.yaml`
@@ -72,12 +83,14 @@ Use the two profile examples as reviewable starting points:
   - no private nodes
   - no NAT
   - public load balancer allowed
+  - HTTP proof via public load balancer
 - `overrides.org-hardened.example.yaml`
   - explicit network contract
   - private nodes enabled
   - control-plane CIDR required
   - NAT assumed on
   - public load balancer treated as restricted by default
+  - HTTP proof via frontend port-forward
 - `overrides.adopt-existing.example.yaml`
   - existing Artifact Registry repo
   - existing cluster contract

@@ -16,5 +16,12 @@ Current local helper:
 ./docs/bootstrap/export-stage-contracts.sh
 ```
 
-That helper exports `terraform output -json` into `config/stages/<stage>/outputs/current.json`
-for any stage that already has readable state.
+That helper exports `terraform output -json` into:
+
+- `config/stages/<stage>/outputs/<workspace>.json`
+- `config/stages/<stage>/outputs/current.json` as a convenience alias for the latest export
+
+Recommended workspace contract for the current acceptance environments:
+
+- `default` - simple sandbox/public project
+- `org-constrained` - stricter org-managed project

@@ -16,3 +16,7 @@ org-policy constraints.
 - explicit network/CIDR contract
 - existing identity adoption is more likely than repo-managed creation
 - later hardened-environment runtime regression after the baseline sandbox check
+
+Recommended workspace:
+
+- `org-constrained`

@@ -22,11 +22,17 @@ surface without spending the iteration on live cluster proof work.
 3. run:
 
    ```bash
-   ./docs/bootstrap/staged-infra-cycle.sh
+   ./docs/bootstrap/staged-infra-cycle.sh --workspace default
    ```
 
 4. if state exists, inspect the exported snapshots under `config/stages/*/outputs/`
-5. only later, when the repo-shape pass is stable, move to the dedicated real-GKE runtime check
+5. render the runtime proof bind when stage exports are ready:
+
+   ```bash
+   ./docs/bootstrap/render-gke-proof-bind.sh --workspace default
+   ```
+
+6. only later, when the repo-shape pass is stable, move to the dedicated real-GKE runtime check
 
 ## Helper roles
 
@@ -38,6 +44,8 @@ surface without spending the iteration on live cluster proof work.
   - prepares local backend files only after a real state bucket exists
 - `staged-infra-cycle.sh`
   - the default wrapper for the common validate-then-export loop
+- `render-gke-proof-bind.sh`
+  - renders the local runtime proof bind from staged outputs and proof mode
 
 ## When to use the runtime helpers instead
 
@@ -50,3 +58,8 @@ For that later pass, keep the order:
 2. org-constrained project
 
 That keeps baseline staged-lane mistakes separate from genuine hardened-environment differences.
+
+Current recommended workspace names:
+
+- `default` for the simple sandbox/public environment
+- `org-constrained` for the stricter org-managed environment

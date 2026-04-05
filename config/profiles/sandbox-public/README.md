@@ -19,3 +19,7 @@ Use this bundle for the simplest staged-infra shape:
 - simple non-constrained project
 - first staged runtime regression later
 - fastest way to validate the baseline happy path
+
+Recommended workspace:
+
+- `default`

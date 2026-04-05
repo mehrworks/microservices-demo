@@ -31,8 +31,18 @@ These values are branch defaults, not rediscovery items:
 
 1. If this is a fresh GCP account or project, start with `docs/gcp-bootstrap.md`.
 2. Copy `overrides.example.yaml` to `overrides.yaml`.
-3. Bind the project-specific values: `project_id`, `default_repo`, and later `frontend_public_base_url`.
+3. Bind the project-specific values: `project_id`, `default_repo`, and the proof URL in `frontend_public_base_url`.
 4. Use those values with `docs/bootstrap/bootstrap-gke-proof.sh` or the branch proof flow in `docs/dormant-scaffold.md`.
+
+If stage outputs already exist, prefer rendering this local bind from them with:
+
+```bash
+./docs/bootstrap/render-gke-proof-bind.sh
+```
+
+In `proof.http_mode: public-load-balancer`, `frontend_public_base_url` should end
+up as the external IP URL. In `proof.http_mode: port-forward`, it can be the
+local forwarded URL used for verification instead.
 
 This contract is intentionally small and human-reviewed. It is not a full repo
 configuration system.

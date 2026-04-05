@@ -11,6 +11,7 @@ Current scope:
 - optional Autopilot cluster creation
 - hardening placeholders for private nodes, control-plane CIDR, NAT, and public
   exposure policy
+- runtime proof-mode contract for public vs internal verification
 
 The stage supports both create and adopt modes for the Artifact Registry repo and
 the GKE cluster contract:
@@ -21,6 +22,9 @@ the GKE cluster contract:
 The stage also emits a dedicated Artifact Registry contract output so later lanes
 can consume a consistent repo URL and create/adopt status without inspecting the
 resource path directly.
+
+It now also emits `proof_contract`, which is what the runtime bind renderer uses
+to choose the correct HTTP verification path for each environment.
 
 Inputs come from `config/datasets/gke/`.
 

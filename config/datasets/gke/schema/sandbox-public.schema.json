@@ -49,6 +49,18 @@
           "const": true
         }
       }
+    },
+    "proof": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "http_mode": {
+          "const": "public-load-balancer"
+        },
+        "grpc_mode": {
+          "const": "port-forward"
+        }
+      }
     }
   }
 }

@@ -24,11 +24,17 @@ locals {
     lookup(local.overrides, "hardening", {})
   )
 
+  proof = merge(
+    lookup(local.defaults, "proof", {}),
+    lookup(local.overrides, "proof", {})
+  )
+
   config = merge(local.defaults, local.overrides, {
     artifact_registry = local.artifact_registry
     cluster           = local.cluster
     network           = local.network
     hardening         = local.hardening
+    proof             = local.proof
   })
 
   project_id = try(local.config.project_id, null)

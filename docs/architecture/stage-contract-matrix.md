@@ -9,7 +9,7 @@ what each stage consumes and what it emits for later lanes.
 | --- | --- | --- | --- |
 | `infra/1-project` | `config/datasets/project` | adopt existing project | `project_contract` |
 | `infra/2-iam` | `config/datasets/iam` | create or adopt identities | `service_accounts`, `service_account_project_roles`, `iam_contract` |
-| `infra/3-gke` | `config/datasets/gke` | create or adopt repo/cluster | `artifact_registry_contract`, `cluster_contract`, `network_contract` |
+| `infra/3-gke` | `config/datasets/gke` | create or adopt repo/cluster | `artifact_registry_contract`, `cluster_contract`, `network_contract`, `proof_contract` |
 | `infra/4-ci` | `config/datasets/ci` | placeholder profile now, future trigger-enabled profile later | `ci_contract`, `ci_contract_summary` |
 
 ## Handoff expectations
@@ -33,12 +33,17 @@ what each stage consumes and what it emits for later lanes.
 When a stage has readable Terraform state, the local helper
 `docs/bootstrap/export-stage-contracts.sh` can export its emitted contract to:
 
-- `config/stages/1-project/outputs/current.json`
-- `config/stages/2-iam/outputs/current.json`
-- `config/stages/3-gke/outputs/current.json`
-- `config/stages/4-ci/outputs/current.json`
+- `config/stages/1-project/outputs/<workspace>.json`
+- `config/stages/2-iam/outputs/<workspace>.json`
+- `config/stages/3-gke/outputs/<workspace>.json`
+- `config/stages/4-ci/outputs/<workspace>.json`
+
+plus `current.json` as a convenience alias for the most recent export in each stage.
 
 These are local generated artifacts, not canonical inputs.
+
+The `infra/3-gke` export now also includes `proof_contract`, which is the bridge
+between the staged infra lane and the active runtime proof bind.
 
 ## Why this matters
 

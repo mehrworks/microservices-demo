@@ -33,6 +33,31 @@
       "type": "string",
       "minLength": 1
     },
+    "proof": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "http_mode": {
+          "type": "string",
+          "enum": [
+            "public-load-balancer",
+            "port-forward"
+          ]
+        },
+        "grpc_mode": {
+          "type": "string",
+          "enum": [
+            "port-forward"
+          ]
+        },
+        "frontend_local_port": {
+          "type": "number"
+        },
+        "productcatalog_local_port": {
+          "type": "number"
+        }
+      }
+    },
     "active_services": {
       "type": "array",
       "items": {
@@ -89,6 +114,7 @@
     "cluster",
     "namespace",
     "artifact_registry_repository",
+    "proof",
     "frontend",
     "productcatalogservice"
   ]
