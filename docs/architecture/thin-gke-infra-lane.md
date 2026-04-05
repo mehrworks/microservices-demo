@@ -49,6 +49,9 @@ requirements can vary by environment:
 
 Those differences belong in an infra contract layer, not in ad hoc shell history.
 
+The accepted outcomes for those two environments are now frozen in
+`docs/architecture/acceptance-environment-matrix.md`.
+
 ## What is intentionally not happening yet
 
 - Terraform does not run `kubectl apply`
@@ -59,7 +62,7 @@ Those differences belong in an infra contract layer, not in ad hoc shell history
 ## Transitional rule
 
 `config/gke-exposure/` stays in place as the active proof-bind contract until the
-staged infra lane becomes the normal way to recreate the same two-service proof.
+staged infra lane becomes the normal way to recreate the same three-service proof.
 
 Until then:
 
@@ -70,3 +73,8 @@ Until then:
 
 For the staged infra lane, use `docs/architecture/infra-manual-walkthrough.md` as
 the human-run order of operations.
+
+The current runtime baseline remains GKE-fronted even though the next design phase
+will define a hybrid cloud/local control-plane model.
+
+For that next design direction, use `docs/architecture/hybrid-execution-model.md`.

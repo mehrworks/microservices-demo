@@ -46,3 +46,6 @@ The current later runtime-check order remains:
 
 1. `sandbox-public`
 2. `org-hardened`
+
+For expected outcomes after deployment, use
+`docs/architecture/acceptance-environment-matrix.md`.

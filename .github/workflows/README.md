@@ -42,10 +42,11 @@ This workflow runs only for staged infra/config changes and intentionally avoids
 real GKE deployment work. It validates the repo-shape lane by running:
 
 1. profile-bundle validation
-2. `terraform fmt -check -recursive infra`
-3. `terraform init -backend=false -input=false`
-4. `terraform validate`
-5. `terraform plan -input=false -lock=false -no-color`
+2. hybrid contract artifact validation
+3. `terraform fmt -check -recursive infra`
+4. `terraform init -backend=false -input=false`
+5. `terraform validate`
+6. `terraform plan -input=false -lock=false -no-color`
 
 for `infra/1-project`, `infra/2-iam`, `infra/3-gke`, and `infra/4-ci`.
 

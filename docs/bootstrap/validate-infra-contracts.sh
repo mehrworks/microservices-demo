@@ -36,6 +36,75 @@ need_cmd() {
   command -v "$1" >/dev/null 2>&1 || die "missing required command: $1"
 }
 
+validate_contract_artifacts() {
+  python3 - "$ROOT_DIR" <<'PY'
+from pathlib import Path
+import json
+import sys
+
+root = Path(sys.argv[1])
+
+schema_files = [
+    "config/contracts/job-control/schema/submit-job-request.schema.json",
+    "config/contracts/job-control/schema/submit-job-response.schema.json",
+    "config/contracts/job-control/schema/worker-identity.schema.json",
+    "config/contracts/job-control/schema/lease.schema.json",
+    "config/contracts/job-control/schema/claim-next-request.schema.json",
+    "config/contracts/job-control/schema/claim-next-response.schema.json",
+    "config/contracts/job-control/schema/status-update.schema.json",
+    "config/contracts/job-control/schema/job-record.schema.json",
+    "config/contracts/job-control/schema/cancel-job-response.schema.json",
+    "config/contracts/job-control/schema/result-reference.schema.json",
+    "config/contracts/job-control/job-control.openapi.json",
+]
+
+examples = {
+    "config/contracts/job-control/submit-job-request.example.json": ["job_type", "submitted_by", "payload"],
+    "config/contracts/job-control/submit-job-response.example.json": ["job_id", "state", "job_ref"],
+    "config/contracts/job-control/worker-identity.example.json": ["worker_id", "auth_mode", "auth_subject"],
+    "config/contracts/job-control/lease.example.json": ["lease_id", "issued_at", "lease_expires_at", "lease_duration_seconds"],
+    "config/contracts/job-control/claim-next-request.example.json": ["worker"],
+    "config/contracts/job-control/claim-next-response.example.json": ["worker_id", "poll_after_seconds", "job"],
+    "config/contracts/job-control/status-update.example.json": ["job_id", "worker_id", "state", "updated_at"],
+    "config/contracts/job-control/job-record.example.json": ["job_id", "job_type", "state", "submitted_at", "updated_at", "payload"],
+    "config/contracts/job-control/cancel-job-response.example.json": ["job_id", "cancel_requested", "state"],
+    "config/contracts/job-control/result-reference.example.json": ["kind", "uri", "content_type"],
+}
+
+for rel in schema_files:
+    path = root / rel
+    if not path.is_file():
+        raise SystemExit(f"error: missing contract schema {rel}")
+    data = json.loads(path.read_text())
+    if rel.endswith("job-control.openapi.json"):
+        required_paths = {
+            "/v1/jobs",
+            "/v1/jobs/{job_id}",
+            "/v1/jobs/{job_id}:cancel",
+            "/v1/worker/claim",
+            "/v1/jobs/{job_id}/status",
+        }
+        missing = sorted(required_paths.difference(data.get("paths", {}).keys()))
+        if missing:
+            raise SystemExit(f"error: missing job-control API paths: {', '.join(missing)}")
+        schemes = set(data.get("components", {}).get("securitySchemes", {}).keys())
+        missing_schemes = {"operatorBearer", "workerBearer"}.difference(schemes)
+        if missing_schemes:
+            raise SystemExit(f"error: missing job-control security schemes: {', '.join(sorted(missing_schemes))}")
+
+for rel, required_keys in examples.items():
+    path = root / rel
+    if not path.is_file():
+        raise SystemExit(f"error: missing contract example {rel}")
+    data = json.loads(path.read_text())
+    missing = [key for key in required_keys if key not in data]
+    if missing:
+        raise SystemExit(f"error: missing keys in {rel}: {', '.join(missing)}")
+
+print("validated hybrid contract artifacts")
+PY
+}
+
 resolve_stage() {
   case "$1" in
     1-project|2-iam|3-gke|4-ci)
@@ -65,6 +134,7 @@ ensure_workspace() {
 }
 
 need_cmd terraform
+need_cmd python3
 
 cd "$ROOT_DIR"
 
@@ -106,6 +176,9 @@ terraform fmt -check -recursive infra
 
 log "validating profile bundles"
 ./docs/bootstrap/validate-profile-bundles.sh
+
+log "validating contract artifacts"
+validate_contract_artifacts
 
 for stage in "${stages[@]}"; do
   log "initializing ${stage}"

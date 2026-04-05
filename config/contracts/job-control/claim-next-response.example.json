@@ -1,0 +1,22 @@
+{
+  "worker_id": "local-worker-devbox-01",
+  "poll_after_seconds": 5,
+  "job": {
+    "job_id": "job_2026_04_05_0001",
+    "job_type": "local-analysis",
+    "attempt": 1,
+    "lease": {
+      "lease_id": "lease_job_2026_04_05_0001_attempt_1",
+      "issued_at": "2026-04-05T08:00:00Z",
+      "lease_expires_at": "2026-04-05T08:05:00Z",
+      "lease_duration_seconds": 300,
+      "renew_after_seconds": 240
+    },
+    "requested_timeout_seconds": 1800,
+    "cancel_requested": false,
+    "payload": {
+      "input_uri": "gs://example-inputs/demo/input.json",
+      "analysis_mode": "baseline"
+    }
+  }
+}

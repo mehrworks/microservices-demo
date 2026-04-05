@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/microservices-demo/job-control/submit-job-request.schema.json",
+  "title": "Submit job request",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "job_type",
+    "submitted_by",
+    "payload"
+  ],
+  "properties": {
+    "idempotency_key": {
+      "type": "string",
+      "minLength": 1
+    },
+    "job_type": {
+      "type": "string",
+      "minLength": 1
+    },
+    "submitted_by": {
+      "type": "string",
+      "minLength": 1
+    },
+    "priority": {
+      "type": "string",
+      "enum": [
+        "normal",
+        "high"
+      ]
+    },
+    "requested_timeout_seconds": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "requested_result_ttl_seconds": {
+      "type": "integer",
+      "minimum": 60
+    },
+    "labels": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
+    "payload": {
+      "type": "object"
+    }
+  }
+}

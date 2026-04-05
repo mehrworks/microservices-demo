@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/microservices-demo/job-control/claim-next-request.schema.json",
+  "title": "Claim next job request",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "worker"
+  ],
+  "properties": {
+    "worker": {
+      "$ref": "./worker-identity.schema.json"
+    }
+  }
+}

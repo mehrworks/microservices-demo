@@ -8,6 +8,9 @@ This document still describes the supported runtime proof path for the branch.
 The staged `infra/` lane is being introduced separately as a thin cloud-contract
 layer and does not replace the Skaffold proof flow yet.
 
+For accepted environment outcomes, use
+`docs/architecture/acceptance-environment-matrix.md`.
+
 This branch's active proof scope is intentionally small:
 
 - public HTTP edge: `frontend` in `catalog-only` mode

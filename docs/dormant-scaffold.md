@@ -6,6 +6,9 @@ This branch keeps the original multi-service repository shape intact as a **refe
 
 The goal is to preserve the old service bodies, deployment layout, CI history, and release knowledge so services can be reactivated or replaced gradually later, without prematurely rewriting the whole repo around one service.
 
+For the accepted environment outcomes of this current baseline, use
+`docs/architecture/acceptance-environment-matrix.md`.
+
 ## Current operating model
 
 ### Active right now

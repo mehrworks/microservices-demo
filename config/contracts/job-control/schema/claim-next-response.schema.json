@@ -1,0 +1,67 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/microservices-demo/job-control/claim-next-response.schema.json",
+  "title": "Claim next job response",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "worker_id",
+    "poll_after_seconds",
+    "job"
+  ],
+  "properties": {
+    "worker_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "poll_after_seconds": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "job": {
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+            "required": [
+              "job_id",
+              "job_type",
+              "attempt",
+              "payload",
+              "lease"
+            ],
+            "properties": {
+            "job_id": {
+              "type": "string",
+              "minLength": 1
+            },
+            "job_type": {
+              "type": "string",
+              "minLength": 1
+            },
+            "attempt": {
+              "type": "integer",
+              "minimum": 1
+            },
+              "lease": {
+                "$ref": "./lease.schema.json"
+              },
+              "requested_timeout_seconds": {
+                "type": "integer",
+              "minimum": 1
+            },
+            "cancel_requested": {
+              "type": "boolean"
+            },
+            "payload": {
+              "type": "object"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

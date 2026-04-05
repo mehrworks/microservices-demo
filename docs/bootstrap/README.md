@@ -24,13 +24,15 @@ lane and the current runtime proof lane.
 
 ## Recommended use right now
 
-For the current repo-shape pass:
+For the current stable operator baseline:
 
 1. apply a profile bundle or bind datasets by hand
 2. run `staged-infra-cycle.sh` with the intended workspace
 3. inspect emitted contracts if state exists
 4. render `config/gke-exposure/overrides.yaml` from stage outputs when the runtime bind is needed
 
-The normal validation path already includes profile-bundle checks.
+The normal validation path already includes profile-bundle and hybrid contract
+artifact checks.
 
-Keep real GKE proof work for the later dedicated runtime pass.
+Use `docs/architecture/infra-operator-runbook.md` as the single operator flow,
+and `docs/architecture/acceptance-environment-matrix.md` for expected results by environment.

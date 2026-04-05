@@ -140,13 +140,14 @@ Find **Protocol Buffers Descriptions** at the [`./protos` directory](/protos).
    kubectl get pods -n ${NAMESPACE}
    ```
 
-   After a few minutes, you should see the active Pods in a `Running` state:
+    After a few minutes, you should see the active Pods in a `Running` state:
 
-   ```
-   NAME                                     READY   STATUS    RESTARTS   AGE
-   frontend-6b8d69b9fb-wjqdg                1/1     Running   0          3m1s
-   productcatalogservice-557d474574-888kr   1/1     Running   0          3m
-   ```
+    ```
+    NAME                                     READY   STATUS    RESTARTS   AGE
+    frontend-6b8d69b9fb-wjqdg                1/1     Running   0          3m1s
+    productcatalogservice-557d474574-888kr   1/1     Running   0          3m
+    recommendationservice-69c56b74d4-7z8r5   1/1     Running   0          3m1s
+    ```
 
 7. Access the catalog-only public frontend in a browser using the frontend's external IP.
 
@@ -157,10 +158,14 @@ Find **Protocol Buffers Descriptions** at the [`./protos` directory](/protos).
    Visit `http://EXTERNAL_IP` in a web browser to access the thin public path for
    this branch.
 
-8. Optional: verify the backing gRPC service directly.
+8. Optional: verify the product recommendation surface and backing gRPC service.
 
    ```sh
-   kubectl port-forward svc/productcatalogservice 3550:3550 -n ${NAMESPACE}
+   curl -fsS http://EXTERNAL_IP/product/OLJCESPC7Z | grep "You May Also Like"
+   ```
+
+   ```sh
+    kubectl port-forward svc/productcatalogservice 3550:3550 -n ${NAMESPACE}
    grpcurl -plaintext -import-path protos -proto demo.proto -d '{}' \
      localhost:3550 hipstershop.ProductCatalogService/ListProducts
    ```

@@ -1,0 +1,60 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/microservices-demo/job-control/status-update.schema.json",
+  "title": "Worker status update",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "job_id",
+    "worker_id",
+    "state",
+    "updated_at"
+  ],
+  "properties": {
+    "job_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "worker_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "state": {
+      "type": "string",
+      "enum": [
+        "running",
+        "succeeded",
+        "failed",
+        "cancelled"
+      ]
+    },
+    "updated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "progress_percent": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 100
+    },
+    "status_message": {
+      "type": "string"
+    },
+    "error_code": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "result_ref": {
+      "oneOf": [
+        {
+          "$ref": "./result-reference.schema.json"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    }
+  }
+}

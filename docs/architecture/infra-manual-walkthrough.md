@@ -71,17 +71,16 @@ For `config/datasets/ci/`, use one of these shapes:
 
 The current recommended staged-infra default remains the placeholder profile.
 Keep the trigger-enabled profile for later CI provisioning work, not for the
-current repo-shape pass.
+current stable baseline.
 
 Current workspace convention:
 
 - `default` for the simple sandbox/public environment
 - `org-constrained` for the stricter org-managed environment
 
-## Later real-GKE pass order
+## Runtime validation order
 
-When the repo-shape work is far enough along to do a dedicated real-GKE pass,
-the recommended order is:
+When you run the accepted real-GKE proof baseline, the recommended order is:
 
 1. use the simpler non-constrained project first
    - this validates the baseline happy path with fewer environment variables
@@ -106,7 +105,7 @@ first runtime regression, then the constrained account for the stronger follow-u
 ./docs/bootstrap/export-stage-contracts.sh --workspace default
 ```
 
-The export helper is optional during the repo-shape pass. It becomes useful after
+The export helper is optional during the staged validation loop. It becomes useful after
 real applies exist and you want local JSON snapshots of the emitted stage contracts.
 
 If you want validation without export, use:
@@ -128,13 +127,14 @@ tracked examples with:
 ./docs/bootstrap/render-tfbackends.sh --bucket YOUR_TF_STATE_BUCKET
 ```
 
-That remains a later step, not a requirement for the current repo-shape pass.
+That remains a later step, not a requirement for the current stable baseline.
 
 ## What to defer
 
-Do not block this walkthrough on real cluster proof work.
+Do not turn this walkthrough into repeated cluster reproving unless you are
+actually validating a contract change.
 
-Keep these for a later dedicated pass:
+Keep these as separate runtime-validation steps:
 
 - live GKE apply
 - namespace bootstrap and Skaffold rollout

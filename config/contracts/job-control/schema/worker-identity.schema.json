@@ -1,0 +1,52 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/microservices-demo/job-control/worker-identity.schema.json",
+  "title": "Worker identity",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "worker_id",
+    "auth_mode",
+    "auth_subject"
+  ],
+  "properties": {
+    "worker_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "auth_mode": {
+      "type": "string",
+      "enum": [
+        "bearer"
+      ]
+    },
+    "auth_subject": {
+      "type": "string",
+      "minLength": 1
+    },
+    "auth_issuer": {
+      "type": "string",
+      "minLength": 1
+    },
+    "machine_name": {
+      "type": "string"
+    },
+    "worker_version": {
+      "type": "string"
+    },
+    "supports_cancel": {
+      "type": "boolean"
+    },
+    "accepted_job_types": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "uniqueItems": true
+    },
+    "max_lease_seconds": {
+      "type": "integer",
+      "minimum": 1
+    }
+  }
+}

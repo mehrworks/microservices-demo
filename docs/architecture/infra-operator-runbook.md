@@ -2,8 +2,8 @@
 
 This runbook ties the local staged-infra helpers together into one human-run flow.
 
-It is for the current repo-shape phase, where the goal is to evolve the contract
-surface without spending the iteration on live cluster proof work.
+It now describes the current stable operator baseline for the accepted GKE proof
+environments.
 
 ## Default operator loop
 
@@ -32,7 +32,8 @@ surface without spending the iteration on live cluster proof work.
    ./docs/bootstrap/render-gke-proof-bind.sh --workspace default
    ```
 
-6. only later, when the repo-shape pass is stable, move to the dedicated real-GKE runtime check
+6. run the environment-specific proof checks described by the rendered bind and
+   compare outcomes against `docs/architecture/acceptance-environment-matrix.md`
 
 ## Helper roles
 
@@ -47,10 +48,10 @@ surface without spending the iteration on live cluster proof work.
 - `render-gke-proof-bind.sh`
   - renders the local runtime proof bind from staged outputs and proof mode
 
-## When to use the runtime helpers instead
+## Runtime proof order
 
-Use `bootstrap-gke-proof.sh` and the runtime proof docs only when you are in the
-later dedicated GKE runtime pass.
+Use `bootstrap-gke-proof.sh`, `render-gke-proof-bind.sh`, and the runtime proof docs
+when you are running the accepted GKE proof baseline.
 
 For that later pass, keep the order:
 

@@ -19,6 +19,7 @@ included_paths:
   - kubernetes-manifests/**
   - kustomize/**
   - config/gke-exposure/**
+  - config/contracts/**
   - config/datasets/**
   - config/profiles/**
   - infra/**

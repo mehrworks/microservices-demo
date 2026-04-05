@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/microservices-demo/job-control/cancel-job-response.schema.json",
+  "title": "Cancel job response",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "job_id",
+    "cancel_requested",
+    "state"
+  ],
+  "properties": {
+    "job_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "cancel_requested": {
+      "type": "boolean"
+    },
+    "state": {
+      "type": "string",
+      "enum": [
+        "queued",
+        "running",
+        "cancelled"
+      ]
+    }
+  }
+}

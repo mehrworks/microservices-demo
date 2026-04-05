@@ -50,4 +50,4 @@ configuration system.
 
 The new staged infra lane lives under `infra/` with dataset inputs under
 `config/datasets/`, but this folder remains the active proof-bind contract until
-that infra path becomes the normal way to recreate the same two-service runtime proof.
+that infra path becomes the normal way to recreate the same three-service runtime proof.

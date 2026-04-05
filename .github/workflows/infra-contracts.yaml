@@ -9,6 +9,7 @@ on:
     paths:
       - 'infra/**'
       - 'config/README.md'
+      - 'config/contracts/**'
       - 'config/datasets/**'
       - 'config/profiles/**'
       - 'config/backends/**'
@@ -27,6 +28,7 @@ on:
     paths:
       - 'infra/**'
       - 'config/README.md'
+      - 'config/contracts/**'
       - 'config/datasets/**'
       - 'config/profiles/**'
       - 'config/backends/**'

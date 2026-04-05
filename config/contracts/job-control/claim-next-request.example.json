@@ -1,0 +1,15 @@
+{
+  "worker": {
+    "worker_id": "local-worker-devbox-01",
+    "auth_mode": "bearer",
+    "auth_subject": "worker:local-worker-devbox-01",
+    "auth_issuer": "microservices-demo-local",
+    "machine_name": "devbox-01",
+    "worker_version": "0.1.0",
+    "supports_cancel": true,
+    "accepted_job_types": [
+      "local-analysis"
+    ],
+    "max_lease_seconds": 300
+  }
+}

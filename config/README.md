@@ -10,6 +10,7 @@ slice.
 config/
   README.md
   gke-exposure/
+  contracts/
   datasets/
     project/
     iam/
@@ -24,6 +25,8 @@ Guidance:
 
 - `config/gke-exposure/` remains the active human-reviewed proof bind for the
   current `frontend` + `productcatalogservice` + `recommendationservice` slice.
+- `config/contracts/` holds environment-independent shared contract artifacts,
+  starting with the planned hybrid job-control payloads.
 - `config/datasets/` holds the new staged infra inputs for `infra/1-project`,
   `infra/2-iam`, `infra/3-gke`, and `infra/4-ci`.
 - `config/profiles/` groups those dataset examples into reviewable environment bundles.
@@ -33,6 +36,7 @@ Guidance:
 
 See also `config/datasets/README.md` for the stage-to-dataset mapping.
 See also `config/profiles/README.md` for whole-environment bundle choices.
+See also `config/contracts/README.md` for shared hybrid contract artifacts.
 
 ## Contract rules
 

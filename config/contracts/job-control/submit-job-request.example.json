@@ -1,0 +1,16 @@
+{
+  "idempotency_key": "submit-2026-04-05-001",
+  "job_type": "local-analysis",
+  "submitted_by": "frontend-session-abc123",
+  "priority": "normal",
+  "requested_timeout_seconds": 1800,
+  "requested_result_ttl_seconds": 86400,
+  "labels": {
+    "source": "frontend",
+    "profile": "default"
+  },
+  "payload": {
+    "input_uri": "gs://example-inputs/demo/input.json",
+    "analysis_mode": "baseline"
+  }
+}

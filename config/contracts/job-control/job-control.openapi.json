@@ -1,0 +1,204 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Microservices Demo Hybrid Job Control API",
+    "version": "0.1.0",
+    "description": "Minimal cloud-side control-plane interface for the planned hybrid execution model. This is a contract artifact only, not a running service."
+  },
+  "servers": [
+    {
+      "url": "https://example.invalid"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "operatorBearer": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      },
+      "workerBearer": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    }
+  },
+  "paths": {
+    "/v1/jobs": {
+      "post": {
+        "summary": "Submit a new job",
+        "operationId": "submitJob",
+        "security": [
+          {
+            "operatorBearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "./schema/submit-job-request.schema.json"
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Job accepted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schema/submit-job-response.schema.json"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/jobs/{job_id}": {
+      "get": {
+        "summary": "Get a job record",
+        "operationId": "getJob",
+        "security": [
+          {
+            "operatorBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "job_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Job record",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schema/job-record.schema.json"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/jobs/{job_id}:cancel": {
+      "post": {
+        "summary": "Request job cancellation",
+        "operationId": "cancelJob",
+        "security": [
+          {
+            "operatorBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "job_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "Cancellation accepted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schema/cancel-job-response.schema.json"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/worker/claim": {
+      "post": {
+        "summary": "Claim the next available job",
+        "operationId": "claimNextJob",
+        "security": [
+          {
+            "workerBearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "./schema/claim-next-request.schema.json"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Worker claim response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schema/claim-next-response.schema.json"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/jobs/{job_id}/status": {
+      "post": {
+        "summary": "Post a worker status update",
+        "operationId": "updateJobStatus",
+        "security": [
+          {
+            "workerBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "job_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "./schema/status-update.schema.json"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Updated job record",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schema/job-record.schema.json"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -13,10 +13,22 @@ infra lane and the current app-first delivery model.
    - shows stage ownership and dependency boundaries
 4. `stage-contract-matrix.md`
    - shows what each stage consumes and emits today
-5. `infra-manual-walkthrough.md`
+5. `acceptance-environment-matrix.md`
+   - freezes the current accepted environments and expected proof behavior
+6. `infra-manual-walkthrough.md`
    - shows the human-run order for binding datasets and validating stages
-6. `infra-operator-runbook.md`
+7. `infra-operator-runbook.md`
    - ties the local helper scripts into one operator workflow
+8. `hybrid-execution-model.md`
+   - defines the intended next-step cloud/local boundary
+9. `runtime-responsibility-matrix.md`
+   - assigns runtime responsibilities between cloud, local worker, and shared contracts
+10. `job-lifecycle-contract.md`
+   - defines the first planned job/status/result contract for the hybrid phase
+11. `job-control-api-surface.md`
+   - defines the first minimal cloud-side API shape for the hybrid control plane
+12. `local-worker-agent.md`
+   - defines the first worker identity and lease assumptions for the hybrid phase
 
 The local command companion for these docs is
 `docs/bootstrap/validate-infra-contracts.sh`.
@@ -39,5 +51,7 @@ These docs describe the current staged-infra direction only. They do not replace
 the existing runtime proof docs under `docs/gcp-bootstrap.md` and
 `docs/dormant-scaffold.md`.
 
-For the later real-GKE runtime pass, use the simple non-constrained project first,
-then the org-constrained project.
+The accepted runtime environments and their expected outcomes are frozen in
+`docs/architecture/acceptance-environment-matrix.md`.
+
+Concrete hybrid contract artifacts now live under `config/contracts/job-control/`.

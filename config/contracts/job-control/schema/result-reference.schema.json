@@ -1,0 +1,44 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/microservices-demo/job-control/result-reference.schema.json",
+  "title": "Job result reference",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "kind",
+    "uri",
+    "content_type"
+  ],
+  "properties": {
+    "kind": {
+      "type": "string",
+      "enum": [
+        "local-file",
+        "object-storage",
+        "inline-json"
+      ]
+    },
+    "uri": {
+      "type": "string",
+      "minLength": 1
+    },
+    "content_type": {
+      "type": "string",
+      "minLength": 1
+    },
+    "size_bytes": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "checksum_sha256": {
+      "type": "string",
+      "minLength": 1
+    },
+    "metadata": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      }
+    }
+  }
+}

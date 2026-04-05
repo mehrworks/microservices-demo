@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/microservices-demo/job-control/submit-job-response.schema.json",
+  "title": "Submit job response",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "job_id",
+    "state",
+    "job_ref"
+  ],
+  "properties": {
+    "job_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "state": {
+      "type": "string",
+      "enum": [
+        "queued"
+      ]
+    },
+    "job_ref": {
+      "type": "string",
+      "minLength": 1
+    }
+  }
+}
