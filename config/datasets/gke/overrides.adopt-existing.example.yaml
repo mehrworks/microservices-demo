@@ -1,0 +1,17 @@
+# yaml-language-server: $schema=./schema/adopt-existing.schema.json
+
+project_id: REPLACE_WITH_PROJECT_ID
+
+artifact_registry:
+  create: false
+  repository_id: services
+
+cluster:
+  create: false
+  name: msdemo-public
+
+hardening:
+  private_nodes_enabled: false
+  master_ipv4_cidr: null
+  cloud_nat_enabled: false
+  public_load_balancer_enabled: true

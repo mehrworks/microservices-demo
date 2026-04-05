@@ -1,0 +1,2 @@
+bucket = "REPLACE_WITH_TF_STATE_BUCKET"
+prefix = "microservices-demo/infra/1-project"

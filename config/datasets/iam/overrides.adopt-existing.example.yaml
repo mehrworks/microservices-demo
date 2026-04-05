@@ -1,0 +1,18 @@
+# yaml-language-server: $schema=./schema/adopt-existing.schema.json
+
+project_id: REPLACE_WITH_PROJECT_ID
+
+service_accounts:
+  deployer:
+    create: false
+    email: msdemo-deployer@REPLACE_WITH_PROJECT_ID.iam.gserviceaccount.com
+  runtime:
+    create: false
+    email: msdemo-runtime@REPLACE_WITH_PROJECT_ID.iam.gserviceaccount.com
+
+service_account_project_roles:
+  deployer:
+    - roles/artifactregistry.writer
+    - roles/container.developer
+  runtime:
+    - roles/logging.logWriter

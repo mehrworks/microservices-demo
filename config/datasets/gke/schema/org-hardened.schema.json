@@ -1,0 +1,101 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "GKE org-hardened bind",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "project_id",
+    "network",
+    "hardening"
+  ],
+  "properties": {
+    "project_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "artifact_registry": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "create": {
+          "type": "boolean"
+        },
+        "readers": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "cluster": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "create": {
+          "type": "boolean"
+        }
+      }
+    },
+    "network": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "manage",
+        "network_name",
+        "subnetwork_name",
+        "subnet_cidr"
+      ],
+      "properties": {
+        "manage": {
+          "const": true
+        },
+        "network_name": {
+          "type": "string"
+        },
+        "subnetwork_name": {
+          "type": "string"
+        },
+        "subnet_cidr": {
+          "type": "string"
+        },
+        "pods_secondary_range_name": {
+          "type": "string"
+        },
+        "pods_secondary_cidr": {
+          "type": "string"
+        },
+        "services_secondary_range_name": {
+          "type": "string"
+        },
+        "services_secondary_cidr": {
+          "type": "string"
+        }
+      }
+    },
+    "hardening": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "private_nodes_enabled",
+        "master_ipv4_cidr",
+        "cloud_nat_enabled",
+        "public_load_balancer_enabled"
+      ],
+      "properties": {
+        "private_nodes_enabled": {
+          "const": true
+        },
+        "master_ipv4_cidr": {
+          "type": "string"
+        },
+        "cloud_nat_enabled": {
+          "const": true
+        },
+        "public_load_balancer_enabled": {
+          "const": false
+        }
+      }
+    }
+  }
+}

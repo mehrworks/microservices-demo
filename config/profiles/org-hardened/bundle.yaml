@@ -1,0 +1,10 @@
+# yaml-language-server: $schema=../schema/profile-bundle.schema.json
+
+name: org-hardened
+description: Stricter org-managed bundle for the thin GKE lane.
+
+datasets:
+  project: config/datasets/project/overrides.adopt-existing.example.yaml
+  iam: config/datasets/iam/overrides.adopt-existing.example.yaml
+  gke: config/datasets/gke/overrides.org-hardened.example.yaml
+  ci: config/datasets/ci/overrides.placeholder-only.example.yaml

@@ -1,0 +1,181 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "GKE overrides",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "project_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "project_number": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "region": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "namespace": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "artifact_registry": {
+      "$ref": "#/defs/artifactRegistry"
+    },
+    "cluster": {
+      "$ref": "#/defs/cluster"
+    },
+    "network": {
+      "$ref": "#/defs/network"
+    },
+    "hardening": {
+      "$ref": "#/defs/hardening"
+    }
+  },
+  "defs": {
+    "artifactRegistry": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "manage": {
+          "type": "boolean"
+        },
+        "create": {
+          "type": "boolean"
+        },
+        "repository_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "format": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "description": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "readers": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "writers": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "cluster": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "manage": {
+          "type": "boolean"
+        },
+        "create": {
+          "type": "boolean"
+        },
+        "name": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "autopilot": {
+          "type": "boolean"
+        }
+      }
+    },
+    "network": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "manage": {
+          "type": "boolean"
+        },
+        "network_name": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "subnetwork_name": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "subnet_cidr": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "pods_secondary_range_name": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "pods_secondary_cidr": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "services_secondary_range_name": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "services_secondary_cidr": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "hardening": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "private_nodes_enabled": {
+          "type": "boolean"
+        },
+        "master_ipv4_cidr": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "cloud_nat_enabled": {
+          "type": "boolean"
+        },
+        "public_load_balancer_enabled": {
+          "type": "boolean"
+        }
+      }
+    }
+  }
+}

@@ -59,19 +59,9 @@ var validEnvs = []string{"local", "gcp", "azure", "aws", "onprem", "alibaba"}
 func (fe *frontendServer) homeHandler(w http.ResponseWriter, r *http.Request) {
 	log := r.Context().Value(ctxKeyLog{}).(logrus.FieldLogger)
 	log.WithField("currency", currentCurrency(r)).Info("home")
-	currencies, err := fe.getCurrencies(r.Context())
-	if err != nil {
-		renderHTTPError(log, r, w, errors.Wrap(err, "could not retrieve currencies"), http.StatusInternalServerError)
-		return
-	}
 	products, err := fe.getProducts(r.Context())
 	if err != nil {
 		renderHTTPError(log, r, w, errors.Wrap(err, "could not retrieve products"), http.StatusInternalServerError)
-		return
-	}
-	cart, err := fe.getCart(r.Context(), sessionID(r))
-	if err != nil {
-		renderHTTPError(log, r, w, errors.Wrap(err, "could not retrieve cart"), http.StatusInternalServerError)
 		return
 	}
 
@@ -80,13 +70,37 @@ func (fe *frontendServer) homeHandler(w http.ResponseWriter, r *http.Request) {
 		Price *pb.Money
 	}
 	ps := make([]productView, len(products))
-	for i, p := range products {
-		price, err := fe.convertCurrency(r.Context(), p.GetPriceUsd(), currentCurrency(r))
+
+	showCurrency := !catalogOnlyModeEnabled()
+	cartSizeValue := 0
+	var currencies []string
+	var ad *pb.Ad
+
+	if catalogOnlyModeEnabled() {
+		for i, p := range products {
+			ps[i] = productView{Item: p, Price: currentProductPrice(p)}
+		}
+	} else {
+		currencies, err = fe.getCurrencies(r.Context())
 		if err != nil {
-			renderHTTPError(log, r, w, errors.Wrapf(err, "failed to do currency conversion for product %s", p.GetId()), http.StatusInternalServerError)
+			renderHTTPError(log, r, w, errors.Wrap(err, "could not retrieve currencies"), http.StatusInternalServerError)
 			return
 		}
-		ps[i] = productView{p, price}
+		cart, err := fe.getCart(r.Context(), sessionID(r))
+		if err != nil {
+			renderHTTPError(log, r, w, errors.Wrap(err, "could not retrieve cart"), http.StatusInternalServerError)
+			return
+		}
+		cartSizeValue = cartSize(cart)
+		for i, p := range products {
+			price, err := fe.convertCurrency(r.Context(), p.GetPriceUsd(), currentCurrency(r))
+			if err != nil {
+				renderHTTPError(log, r, w, errors.Wrapf(err, "failed to do currency conversion for product %s", p.GetId()), http.StatusInternalServerError)
+				return
+			}
+			ps[i] = productView{Item: p, Price: price}
+		}
+		ad = fe.chooseAd(r.Context(), []string{}, log)
 	}
 
 	// Set ENV_PLATFORM (default to local if not set; use env var if set; otherwise detect GCP, which overrides env)_
@@ -108,12 +122,12 @@ func (fe *frontendServer) homeHandler(w http.ResponseWriter, r *http.Request) {
 	plat.setPlatformDetails(strings.ToLower(env))
 
 	if err := templates.ExecuteTemplate(w, "home", injectCommonTemplateData(r, map[string]interface{}{
-		"show_currency": true,
+		"show_currency": showCurrency,
 		"currencies":    currencies,
 		"products":      ps,
-		"cart_size":     cartSize(cart),
+		"cart_size":     cartSizeValue,
 		"banner_color":  os.Getenv("BANNER_COLOR"), // illustrates canary deployments
-		"ad":            fe.chooseAd(r.Context(), []string{}, log),
+		"ad":            ad,
 	})); err != nil {
 		log.Error(err)
 	}
@@ -156,28 +170,40 @@ func (fe *frontendServer) productHandler(w http.ResponseWriter, r *http.Request)
 		renderHTTPError(log, r, w, errors.Wrap(err, "could not retrieve product"), http.StatusInternalServerError)
 		return
 	}
-	currencies, err := fe.getCurrencies(r.Context())
-	if err != nil {
-		renderHTTPError(log, r, w, errors.Wrap(err, "could not retrieve currencies"), http.StatusInternalServerError)
-		return
-	}
 
-	cart, err := fe.getCart(r.Context(), sessionID(r))
-	if err != nil {
-		renderHTTPError(log, r, w, errors.Wrap(err, "could not retrieve cart"), http.StatusInternalServerError)
-		return
-	}
+	showCurrency := !catalogOnlyModeEnabled()
+	cartSizeValue := 0
+	var currencies []string
+	var recommendations []*pb.Product
+	var ad *pb.Ad
+	price := currentProductPrice(p)
 
-	price, err := fe.convertCurrency(r.Context(), p.GetPriceUsd(), currentCurrency(r))
-	if err != nil {
-		renderHTTPError(log, r, w, errors.Wrap(err, "failed to convert currency"), http.StatusInternalServerError)
-		return
-	}
+	if !catalogOnlyModeEnabled() {
+		currencies, err = fe.getCurrencies(r.Context())
+		if err != nil {
+			renderHTTPError(log, r, w, errors.Wrap(err, "could not retrieve currencies"), http.StatusInternalServerError)
+			return
+		}
 
-	// ignores the error retrieving recommendations since it is not critical
-	recommendations, err := fe.getRecommendations(r.Context(), sessionID(r), []string{id})
-	if err != nil {
-		log.WithField("error", err).Warn("failed to get product recommendations")
+		cart, err := fe.getCart(r.Context(), sessionID(r))
+		if err != nil {
+			renderHTTPError(log, r, w, errors.Wrap(err, "could not retrieve cart"), http.StatusInternalServerError)
+			return
+		}
+		cartSizeValue = cartSize(cart)
+
+		price, err = fe.convertCurrency(r.Context(), p.GetPriceUsd(), currentCurrency(r))
+		if err != nil {
+			renderHTTPError(log, r, w, errors.Wrap(err, "failed to convert currency"), http.StatusInternalServerError)
+			return
+		}
+
+		// ignores the error retrieving recommendations since it is not critical
+		recommendations, err = fe.getRecommendations(r.Context(), sessionID(r), []string{id})
+		if err != nil {
+			log.WithField("error", err).Warn("failed to get product recommendations")
+		}
+		ad = fe.chooseAd(r.Context(), p.Categories, log)
 	}
 
 	product := struct {
@@ -196,12 +222,12 @@ func (fe *frontendServer) productHandler(w http.ResponseWriter, r *http.Request)
 	}
 
 	if err := templates.ExecuteTemplate(w, "product", injectCommonTemplateData(r, map[string]interface{}{
-		"ad":              fe.chooseAd(r.Context(), p.Categories, log),
-		"show_currency":   true,
+		"ad":              ad,
+		"show_currency":   showCurrency,
 		"currencies":      currencies,
 		"product":         product,
 		"recommendations": recommendations,
-		"cart_size":       cartSize(cart),
+		"cart_size":       cartSizeValue,
 		"packagingInfo":   packagingInfo,
 	})); err != nil {
 		log.Println(err)
@@ -232,7 +258,7 @@ func (fe *frontendServer) addToCartHandler(w http.ResponseWriter, r *http.Reques
 		renderHTTPError(log, r, w, errors.Wrap(err, "failed to add to cart"), http.StatusInternalServerError)
 		return
 	}
-	w.Header().Set("location", baseUrl + "/cart")
+	w.Header().Set("location", baseUrl+"/cart")
 	w.WriteHeader(http.StatusFound)
 }
 
@@ -244,7 +270,7 @@ func (fe *frontendServer) emptyCartHandler(w http.ResponseWriter, r *http.Reques
 		renderHTTPError(log, r, w, errors.Wrap(err, "failed to empty cart"), http.StatusInternalServerError)
 		return
 	}
-	w.Header().Set("location", baseUrl + "/")
+	w.Header().Set("location", baseUrl+"/")
 	w.WriteHeader(http.StatusFound)
 }
 
@@ -401,6 +427,7 @@ func (fe *frontendServer) placeOrderHandler(w http.ResponseWriter, r *http.Reque
 }
 
 func (fe *frontendServer) assistantHandler(w http.ResponseWriter, r *http.Request) {
+	log := r.Context().Value(ctxKeyLog{}).(logrus.FieldLogger)
 	currencies, err := fe.getCurrencies(r.Context())
 	if err != nil {
 		renderHTTPError(log, r, w, errors.Wrap(err, "could not retrieve currencies"), http.StatusInternalServerError)
@@ -423,7 +450,7 @@ func (fe *frontendServer) logoutHandler(w http.ResponseWriter, r *http.Request) 
 		c.MaxAge = -1
 		http.SetCookie(w, c)
 	}
-	w.Header().Set("Location", baseUrl + "/")
+	w.Header().Set("Location", baseUrl+"/")
 	w.WriteHeader(http.StatusFound)
 }
 
@@ -530,6 +557,9 @@ func (fe *frontendServer) chooseAd(ctx context.Context, ctxKeys []string, log lo
 		log.WithField("error", err).Warn("failed to retrieve ads")
 		return nil
 	}
+	if len(ads) == 0 {
+		return nil
+	}
 	return ads[rand.Intn(len(ads))]
 }
 
@@ -556,7 +586,10 @@ func injectCommonTemplateData(r *http.Request, payload map[string]interface{}) m
 		"platform_css":      plat.css,
 		"platform_name":     plat.provider,
 		"is_cymbal_brand":   isCymbalBrand,
-		"assistant_enabled": assistantEnabled,
+		"assistant_enabled": assistantFeatureEnabled(),
+		"cart_enabled":      cartFeatureEnabled(),
+		"catalog_only_mode": catalogOnlyModeEnabled(),
+		"catalog_mode_note": catalogOnlyModeNotice,
 		"deploymentDetails": deploymentDetailsMap,
 		"frontendMessage":   frontendMessage,
 		"currentYear":       time.Now().Year(),
@@ -571,6 +604,10 @@ func injectCommonTemplateData(r *http.Request, payload map[string]interface{}) m
 }
 
 func currentCurrency(r *http.Request) string {
+	if catalogOnlyModeEnabled() {
+		return defaultCurrency
+	}
+
 	c, _ := r.Cookie(cookieCurrency)
 	if c != nil {
 		return c.Value

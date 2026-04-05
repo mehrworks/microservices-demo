@@ -43,6 +43,12 @@
             <h3>Hot Products</h3>
           </div>
 
+          {{ if $.catalog_only_mode }}
+          <div class="col-12">
+            <p class="text-muted mb-4">{{ $.catalog_mode_note }}</p>
+          </div>
+          {{ end }}
+
           {{ range $.products }}
           <div class="col-md-4 hot-product-card">
             <a href="{{ $.baseUrl }}/product/{{.Item.Id}}">

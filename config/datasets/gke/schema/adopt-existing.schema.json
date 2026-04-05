@@ -1,0 +1,70 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "GKE adopt-existing bind",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "project_id",
+    "artifact_registry",
+    "cluster"
+  ],
+  "properties": {
+    "project_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "artifact_registry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "create",
+        "repository_id"
+      ],
+      "properties": {
+        "create": {
+          "const": false
+        },
+        "repository_id": {
+          "type": "string"
+        }
+      }
+    },
+    "cluster": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "create",
+        "name"
+      ],
+      "properties": {
+        "create": {
+          "const": false
+        },
+        "name": {
+          "type": "string"
+        }
+      }
+    },
+    "hardening": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "private_nodes_enabled": {
+          "type": "boolean"
+        },
+        "master_ipv4_cidr": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "cloud_nat_enabled": {
+          "type": "boolean"
+        },
+        "public_load_balancer_enabled": {
+          "type": "boolean"
+        }
+      }
+    }
+  }
+}

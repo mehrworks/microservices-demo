@@ -1,0 +1,95 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/microservices-demo/gke-exposure-proof-bind.schema.json",
+  "title": "GKE exposure proof bind",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "project_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "region": {
+      "type": "string",
+      "minLength": 1
+    },
+    "cluster": {
+      "type": "string",
+      "minLength": 1
+    },
+    "namespace": {
+      "type": "string",
+      "minLength": 1
+    },
+    "artifact_registry_repository": {
+      "type": "string",
+      "minLength": 1
+    },
+    "default_repo": {
+      "type": "string",
+      "minLength": 1
+    },
+    "frontend_public_base_url": {
+      "type": "string",
+      "minLength": 1
+    },
+    "active_services": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "frontend",
+          "productcatalogservice"
+        ]
+      },
+      "uniqueItems": true
+    },
+    "frontend": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "mode": {
+          "type": "string",
+          "enum": [
+            "catalog-only",
+            "full"
+          ]
+        },
+        "service_name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "public_service_name": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "mode",
+        "service_name",
+        "public_service_name"
+      ]
+    },
+    "productcatalogservice": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "service_name": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "service_name"
+      ]
+    }
+  },
+  "required": [
+    "region",
+    "cluster",
+    "namespace",
+    "artifact_registry_repository",
+    "frontend",
+    "productcatalogservice"
+  ]
+}

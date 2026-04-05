@@ -1,0 +1,9 @@
+# yaml-language-server: $schema=./schema/placeholder-only.schema.json
+
+project_id: REPLACE_WITH_PROJECT_ID
+repo_owner: REPLACE_WITH_GITHUB_OWNER
+provider: github-actions
+trigger_mode: placeholder
+manage_triggers: false
+triggers_enabled: false
+manual_approval_required: true

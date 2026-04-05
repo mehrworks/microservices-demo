@@ -1,0 +1,59 @@
+# Copyright 2026
+
+name: "Continuous Integration - Infra Contracts"
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'infra/**'
+      - 'config/README.md'
+      - 'config/datasets/**'
+      - 'config/profiles/**'
+      - 'config/backends/**'
+      - 'config/stages/**'
+      - 'config/gke-exposure/**'
+      - 'docs/architecture/**'
+      - 'docs/bootstrap/**'
+      - 'docs/gcp-bootstrap.md'
+      - 'docs/dormant-scaffold.md'
+      - '.github/workflows/infra-contracts.yaml'
+      - '.github/workflows/README.md'
+  push:
+    branches:
+      - main
+      - release/*
+    paths:
+      - 'infra/**'
+      - 'config/README.md'
+      - 'config/datasets/**'
+      - 'config/profiles/**'
+      - 'config/backends/**'
+      - 'config/stages/**'
+      - 'config/gke-exposure/**'
+      - 'docs/architecture/**'
+      - 'docs/bootstrap/**'
+      - 'docs/gcp-bootstrap.md'
+      - 'docs/dormant-scaffold.md'
+      - '.github/workflows/infra-contracts.yaml'
+      - '.github/workflows/README.md'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  terraform-contracts:
+    runs-on: [self-hosted, is-enabled]
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: '1.14.7'
+          terraform_wrapper: false
+
+      - name: Validate Infra Contracts
+        timeout-minutes: 20
+        run: bash ./docs/bootstrap/validate-infra-contracts.sh

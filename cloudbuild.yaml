@@ -16,7 +16,8 @@
 
 # Dormant scaffold note:
 # This branch keeps the original multi-service repo shape as reference, but only
-# productcatalogservice is active in the current skaffold/manifests loop.
+# `frontend` (catalog-only mode) and `productcatalogservice` are active in the
+# current skaffold/manifests loop.
 # When you add or remove active services later, update cloudbuild.yaml together
 # with skaffold.yaml, kubernetes-manifests/kustomization.yaml,
 # kustomize/base/kustomization.yaml, and the CI workflows so the active surface

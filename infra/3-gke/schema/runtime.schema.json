@@ -1,0 +1,180 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Stage 3 GKE runtime schema",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "project_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "project_number": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "region": {
+      "type": "string"
+    },
+    "namespace": {
+      "type": "string"
+    },
+    "artifact_registry": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "manage": {
+          "type": "boolean"
+        },
+        "create": {
+          "type": "boolean"
+        },
+        "repository_id": {
+          "type": "string"
+        },
+        "format": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "readers": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "writers": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "manage",
+        "create",
+        "repository_id",
+        "format",
+        "readers",
+        "writers"
+      ]
+    },
+    "cluster": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "manage": {
+          "type": "boolean"
+        },
+        "create": {
+          "type": "boolean"
+        },
+        "name": {
+          "type": "string"
+        },
+        "autopilot": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "manage",
+        "create",
+        "name",
+        "autopilot"
+      ]
+    },
+    "network": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "manage": {
+          "type": "boolean"
+        },
+        "network_name": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "subnetwork_name": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "subnet_cidr": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "pods_secondary_range_name": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "pods_secondary_cidr": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "services_secondary_range_name": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "services_secondary_cidr": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "manage",
+        "network_name"
+      ]
+    },
+    "hardening": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "private_nodes_enabled": {
+          "type": "boolean"
+        },
+        "master_ipv4_cidr": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "cloud_nat_enabled": {
+          "type": "boolean"
+        },
+        "public_load_balancer_enabled": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "private_nodes_enabled",
+        "cloud_nat_enabled",
+        "public_load_balancer_enabled"
+      ]
+    }
+  },
+  "required": [
+    "region",
+    "namespace",
+    "artifact_registry",
+    "cluster",
+    "network",
+    "hardening"
+  ]
+}

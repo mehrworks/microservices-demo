@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Project overrides",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "project_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "project_number": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "region": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "enabled_apis": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  }
+}

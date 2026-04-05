@@ -25,11 +25,14 @@ Find **Protocol Buffers Descriptions** at the [`./protos` directory](/protos).
 > **Dormant scaffold branch note**
 >
 > On `spike/dormant-scaffold-v2`, the full multi-service repo shape is kept as
-> reference, but only `productcatalogservice` is active in the current build,
-> deploy, and CI loop. Runtime defaults for that active service are controlled
-> at the manifest layer so vendor source can stay close to upstream until a real
-> fork/rename of the service happens. See [`docs/dormant-scaffold.md`](/docs/dormant-scaffold.md)
-> for the current branch operating model and reactivation checklist.
+> reference, but only `frontend` (running in `catalog-only` mode) and
+> `productcatalogservice` are active in the current build, deploy, and CI loop.
+> Runtime defaults for that thin public path are controlled at the manifest
+> layer so vendor source can stay close to upstream until a real fork/rename of
+> the services happens. See [`docs/dormant-scaffold.md`](/docs/dormant-scaffold.md)
+> for the current branch operating model, proof flow, and reactivation checklist,
+> and [`docs/gcp-bootstrap.md`](/docs/gcp-bootstrap.md) for the fresh-account
+> bootstrap path.
 
 | Service                                              | Language      | Description                                                                                                                       |
 | ---------------------------------------------------- | ------------- | --------------------------------------------------------------------------------------------------------------------------------- |
@@ -55,16 +58,19 @@ Find **Protocol Buffers Descriptions** at the [`./protos` directory](/protos).
 
 > **Dormant scaffold branch note**
 >
-> On `spike/dormant-scaffold-v2`, this familiar quickstart command shape is
-> preserved, but `./release/kubernetes-manifests.yaml` is intentionally narrowed
-> to `productcatalogservice` only. So the `kubectl apply` step still works, but
-> the proof path is a gRPC call to `productcatalogservice`, not the original
-> full frontend experience. See [`docs/dormant-scaffold.md`](/docs/dormant-scaffold.md)
-> for the branch-specific operating model and bootstrap proof flow.
+> On `spike/dormant-scaffold-v2`, `./release/kubernetes-manifests.yaml` is
+> intentionally narrowed to a thin public path: `frontend` in `catalog-only`
+> mode plus `productcatalogservice`. The working branch proof uses
+> `skaffold run`, not the direct `kubectl apply` step below, because Skaffold is
+> what rewrites the active image references for this branch. See
+> [`docs/dormant-scaffold.md`](/docs/dormant-scaffold.md) for the branch-specific
+> operating model and bootstrap proof flow, and [`docs/gcp-bootstrap.md`](/docs/gcp-bootstrap.md)
+> for the reusable fresh-account bootstrap path.
 
 1. Ensure you have the following requirements:
    - [Google Cloud project](https://cloud.google.com/resource-manager/docs/creating-managing-projects#creating_a_project).
-   - Shell environment with `gcloud`, `git`, and `kubectl`.
+   - Shell environment with `gcloud`, `git`, `kubectl`, `skaffold`, and Docker.
+   - `gke-gcloud-auth-plugin` for continued `kubectl` access to GKE.
 
 2. Clone the latest major version.
 
@@ -75,74 +81,98 @@ Find **Protocol Buffers Descriptions** at the [`./protos` directory](/protos).
 
    The `--depth 1` argument skips downloading git history.
 
-3. Set the Google Cloud project and region and ensure the Google Kubernetes Engine API is enabled.
+3. Set the Google Cloud project, branch defaults, and required APIs.
 
    ```sh
    export PROJECT_ID=<PROJECT_ID>
-   export REGION=us-central1
-   gcloud services enable container.googleapis.com \
+   export REGION=europe-west3
+   export AR_REPO=services
+   export CLUSTER=msdemo-public
+   export NAMESPACE=msdemo-public
+
+   gcloud services enable \
+     container.googleapis.com \
+     artifactregistry.googleapis.com \
+     cloudbuild.googleapis.com \
+     compute.googleapis.com \
      --project=${PROJECT_ID}
    ```
 
    Substitute `<PROJECT_ID>` with the ID of your Google Cloud project.
 
+   On `spike/dormant-scaffold-v2`, the reusable fresh-account bootstrap path
+    lives in [`docs/gcp-bootstrap.md`](/docs/gcp-bootstrap.md), and the proof-safe
+    bind contract lives under [`config/gke-exposure`](/config/gke-exposure).
+
+     The branch now also carries a thin staged infra lane under [`infra/`](/infra)
+      with dataset inputs under [`config/datasets`](/config/datasets) and
+      environment bundles under [`config/profiles`](/config/profiles). That staged
+      lane is for cloud-contract evolution; the supported runtime proof path still
+      uses the Skaffold flow shown here. For the staged infra path itself, use
+      [`docs/architecture/infra-manual-walkthrough.md`](/docs/architecture/infra-manual-walkthrough.md)
+      and the local helper flow in [`docs/bootstrap/README.md`](/docs/bootstrap/README.md).
+
 4. Create a GKE cluster and get the credentials for it.
 
    ```sh
-   gcloud container clusters create-auto online-boutique \
+   gcloud container clusters create-auto ${CLUSTER} \
+     --project=${PROJECT_ID} --region=${REGION}
+
+   gcloud container clusters get-credentials ${CLUSTER} \
      --project=${PROJECT_ID} --region=${REGION}
    ```
 
    Creating the cluster may take a few minutes.
 
-5. Deploy Online Boutique to the cluster.
+5. Deploy the branch's thin public proof path.
 
    ```sh
-   kubectl apply -f ./release/kubernetes-manifests.yaml
+   skaffold run \
+     --namespace=${NAMESPACE} \
+     --default-repo=${REGION}-docker.pkg.dev/${PROJECT_ID}/${AR_REPO}
    ```
 
 6. Wait for the pods to be ready.
 
    ```sh
-   kubectl get pods
+   kubectl get pods -n ${NAMESPACE}
    ```
 
-   After a few minutes, you should see the Pods in a `Running` state:
+   After a few minutes, you should see the active Pods in a `Running` state:
 
    ```
    NAME                                     READY   STATUS    RESTARTS   AGE
-   adservice-76bdd69666-ckc5j               1/1     Running   0          2m58s
-   cartservice-66d497c6b7-dp5jr             1/1     Running   0          2m59s
-   checkoutservice-666c784bd6-4jd22         1/1     Running   0          3m1s
-   currencyservice-5d5d496984-4jmd7         1/1     Running   0          2m59s
-   emailservice-667457d9d6-75jcq            1/1     Running   0          3m2s
    frontend-6b8d69b9fb-wjqdg                1/1     Running   0          3m1s
-   loadgenerator-665b5cd444-gwqdq           1/1     Running   0          3m
-   paymentservice-68596d6dd6-bf6bv          1/1     Running   0          3m
    productcatalogservice-557d474574-888kr   1/1     Running   0          3m
-   recommendationservice-69c56b74d4-7z8r5   1/1     Running   0          3m1s
-   redis-cart-5f59546cdd-5jnqf              1/1     Running   0          2m58s
-   shippingservice-6ccc89f8fd-v686r         1/1     Running   0          2m58s
    ```
 
-7. Access the web frontend in a browser using the frontend's external IP.
+7. Access the catalog-only public frontend in a browser using the frontend's external IP.
 
    ```sh
-   kubectl get service frontend-external | awk '{print $4}'
+   kubectl get service frontend-external -n ${NAMESPACE} | awk '{print $4}'
    ```
 
-   Visit `http://EXTERNAL_IP` in a web browser to access your instance of Online Boutique.
+   Visit `http://EXTERNAL_IP` in a web browser to access the thin public path for
+   this branch.
 
-8. Congrats! You've deployed the default Online Boutique. To deploy a different variation of Online Boutique (e.g., with Google Cloud Operations tracing, Istio, etc.), see [Deploy Online Boutique variations with Kustomize](#deploy-online-boutique-variations-with-kustomize).
-
-9. Once you are done with it, delete the GKE cluster.
+8. Optional: verify the backing gRPC service directly.
 
    ```sh
-   gcloud container clusters delete online-boutique \
-     --project=${PROJECT_ID} --region=${REGION}
+   kubectl port-forward svc/productcatalogservice 3550:3550 -n ${NAMESPACE}
+   grpcurl -plaintext -import-path protos -proto demo.proto -d '{}' \
+     localhost:3550 hipstershop.ProductCatalogService/ListProducts
    ```
 
-   Deleting the cluster may take a few minutes.
+9. Congrats! You've deployed the branch's thin public path. To deploy a different variation of Online Boutique (e.g., with Google Cloud Operations tracing, Istio, etc.), see [Deploy Online Boutique variations with Kustomize](#deploy-online-boutique-variations-with-kustomize).
+
+10. Once you are done with it, delete the GKE cluster.
+
+    ```sh
+    gcloud container clusters delete ${CLUSTER} \
+      --project=${PROJECT_ID} --region=${REGION}
+    ```
+
+    Deleting the cluster may take a few minutes.
 
 ## Additional deployment options
 

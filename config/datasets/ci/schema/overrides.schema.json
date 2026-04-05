@@ -1,0 +1,77 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "CI overrides",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "project_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "region": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "repo_owner": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "provider": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "trigger_mode": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "manage_triggers": {
+      "type": "boolean"
+    },
+    "repo_name": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "main_branch": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "pull_request_target_branch": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "triggers_enabled": {
+      "type": "boolean"
+    },
+    "manual_approval_required": {
+      "type": "boolean"
+    },
+    "included_paths": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "excluded_paths": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  }
+}

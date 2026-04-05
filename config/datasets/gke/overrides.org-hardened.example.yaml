@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=./schema/org-hardened.schema.json
+
+project_id: REPLACE_WITH_PROJECT_ID
+
+artifact_registry:
+  create: true
+  readers:
+    - serviceAccount:REPLACE_WITH_NODE_OR_RUNTIME_SA
+
+cluster:
+  create: true
+
+network:
+  manage: true
+  network_name: msdemo-public
+  subnetwork_name: msdemo-public-ew3
+  subnet_cidr: 10.20.0.0/24
+  pods_secondary_range_name: pods
+  pods_secondary_cidr: 10.21.0.0/16
+  services_secondary_range_name: services
+  services_secondary_cidr: 10.22.0.0/20
+
+hardening:
+  private_nodes_enabled: true
+  master_ipv4_cidr: 172.16.0.0/28
+  cloud_nat_enabled: true
+  public_load_balancer_enabled: false

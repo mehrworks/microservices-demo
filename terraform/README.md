@@ -14,6 +14,11 @@ limitations under the License. -->
 
 # Use Terraform to deploy Online Boutique on a GKE cluster
 
+> Legacy reference: this directory preserves the original vendor Terraform path,
+> but it is no longer the target architecture for new branch work on
+> `spike/dormant-scaffold-v2`. New infra work now lives under `infra/`, while the
+> active runtime proof path stays in Skaffold/manifests.
+
 This page walks you through the steps required to deploy the [Online Boutique](https://github.com/GoogleCloudPlatform/microservices-demo) sample application on a [Google Kubernetes Engine (GKE)](https://cloud.google.com/kubernetes-engine) cluster using Terraform.
 
 ## Prerequisites

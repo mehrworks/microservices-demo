@@ -1,0 +1,2 @@
+defaults: config/gke-exposure/defaults.yaml
+overrides: config/gke-exposure/overrides.yaml

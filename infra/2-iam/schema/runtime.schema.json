@@ -1,0 +1,83 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Stage 2 IAM runtime schema",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "project_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "region": {
+      "type": "string"
+    },
+    "service_accounts": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "deployer": {
+          "$ref": "#/defs/serviceAccount"
+        },
+        "runtime": {
+          "$ref": "#/defs/serviceAccount"
+        }
+      }
+    },
+    "service_account_project_roles": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "deployer": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "runtime": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  },
+  "required": [
+    "region",
+    "service_accounts",
+    "service_account_project_roles"
+  ],
+  "defs": {
+    "serviceAccount": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "create": {
+          "type": "boolean"
+        },
+        "email": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "account_id": {
+          "type": "string"
+        },
+        "display_name": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "create",
+        "account_id",
+        "display_name"
+      ]
+    }
+  }
+}

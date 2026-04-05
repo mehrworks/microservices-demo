@@ -14,17 +14,143 @@
 
 # ----------------------------------------------------------
 # Dormant scaffold note:
-# On this branch, the original multi-service release path is narrowed so the
-# upstream-style command below still works for the active service only:
+# On this branch, this file intentionally tracks the current thin public path:
+# `frontend` in `catalog-only` mode plus `productcatalogservice`.
 #
-#   kubectl apply -f ./release/kubernetes-manifests.yaml
+# It still uses bare image names so the active resource set stays easy to diff
+# against upstream history. Direct `kubectl apply -f ./release/kubernetes-
+# manifests.yaml` requires replacing those image values with real pushed image
+# references first. The working bootstrap proof path for this branch is
+# `skaffold run` as documented in `docs/dormant-scaffold.md`.
 #
-# This file intentionally tracks the current productcatalogservice-only active
-# surface. The broader full-app release knowledge remains preserved elsewhere in
-# the repo as dormant scaffold/reference material.
+# The broader full-app release knowledge remains preserved elsewhere in the repo
+# as dormant scaffold/reference material.
 # ----------------------------------------------------------
 
 # [START gke_release_kubernetes_manifests_microservices_demo]
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend
+  labels:
+    app: frontend
+spec:
+  selector:
+    matchLabels:
+      app: frontend
+  template:
+    metadata:
+      labels:
+        app: frontend
+      annotations:
+        sidecar.istio.io/rewriteAppHTTPProbers: "true"
+    spec:
+      serviceAccountName: frontend
+      securityContext:
+        fsGroup: 1000
+        runAsGroup: 1000
+        runAsNonRoot: true
+        runAsUser: 1000
+      containers:
+        - name: server
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            privileged: false
+            readOnlyRootFilesystem: true
+          image: frontend
+          ports:
+          - containerPort: 8080
+          readinessProbe:
+            initialDelaySeconds: 10
+            httpGet:
+              path: "/_healthz"
+              port: 8080
+              httpHeaders:
+              - name: "Cookie"
+                value: "shop_session-id=x-readiness-probe"
+          livenessProbe:
+            initialDelaySeconds: 10
+            httpGet:
+              path: "/_healthz"
+              port: 8080
+              httpHeaders:
+              - name: "Cookie"
+                value: "shop_session-id=x-liveness-probe"
+          env:
+          # Dormant scaffold note:
+          # This branch activates frontend as a thin public edge in catalog-only
+          # mode. Keep the broader full-app env surface dormant unless the
+          # matching services are reactivated together across skaffold,
+          # manifests, release YAML, CI, and docs.
+          - name: PORT
+            value: "8080"
+          - name: FRONTEND_MODE
+            value: "catalog-only"
+          - name: PRODUCT_CATALOG_SERVICE_ADDR
+            value: "productcatalogservice:3550"
+          - name: ENABLE_PROFILER
+            value: "0"
+          # Dormant full-app frontend env history:
+          # - name: CURRENCY_SERVICE_ADDR
+          #   value: "currencyservice:7000"
+          # - name: CART_SERVICE_ADDR
+          #   value: "cartservice:7070"
+          # - name: RECOMMENDATION_SERVICE_ADDR
+          #   value: "recommendationservice:8080"
+          # - name: SHIPPING_SERVICE_ADDR
+          #   value: "shippingservice:50051"
+          # - name: CHECKOUT_SERVICE_ADDR
+          #   value: "checkoutservice:5050"
+          # - name: AD_SERVICE_ADDR
+          #   value: "adservice:9555"
+          # - name: SHOPPING_ASSISTANT_SERVICE_ADDR
+          #   value: "shoppingassistantservice:80"
+          resources:
+            requests:
+              cpu: 100m
+              memory: 64Mi
+            limits:
+              cpu: 200m
+              memory: 128Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend
+  labels:
+    app: frontend
+spec:
+  type: ClusterIP
+  selector:
+    app: frontend
+  ports:
+  - name: http
+    port: 80
+    targetPort: 8080
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend-external
+  labels:
+    app: frontend
+spec:
+  type: LoadBalancer
+  selector:
+    app: frontend
+  ports:
+  - name: http
+    port: 80
+    targetPort: 8080
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: frontend
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -109,9 +235,10 @@ metadata:
   name: productcatalogservice
 # --- BEGIN DORMANT FULL-APP RELEASE HISTORY ---
 # The original upstream full-app release manifest is preserved below as
-# commented dormant history/reference. Keep productcatalogservice as the only
-# active block above unless services are deliberately reactivated together in
-# skaffold.yaml, kustomization files, CI workflows, and related docs.
+# commented dormant history/reference. Keep the thin `frontend` +
+# `productcatalogservice` active block above unless services are deliberately
+# reactivated together in skaffold.yaml, kustomization files, CI workflows, and
+# related docs.
 #
 # # Copyright 2025 Google LLC
 # #

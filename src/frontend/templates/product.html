@@ -53,6 +53,7 @@
           </div>
           {{ end }}
 
+          {{ if $.cart_enabled }}
           <form method="POST" action="{{ $.baseUrl }}/cart">
             <input type="hidden" name="product_id" value="{{$.product.Item.Id}}" />
             <div class="product-quantity-dropdown">
@@ -68,6 +69,9 @@
             </div>
             <button type="submit" class="cymbal-button-primary">Add To Cart</button>
           </form>
+          {{ else }}
+          <p class="text-muted">{{ $.catalog_mode_note }}</p>
+          {{ end }}
         </div>
       </div>
     </div>

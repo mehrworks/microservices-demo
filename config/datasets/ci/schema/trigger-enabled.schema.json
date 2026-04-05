@@ -1,0 +1,57 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "CI trigger-enabled bind",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "project_id",
+    "repo_owner",
+    "triggers_enabled"
+  ],
+  "properties": {
+    "project_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "repo_owner": {
+      "type": "string",
+      "minLength": 1
+    },
+    "provider": {
+      "const": "cloud-build"
+    },
+    "trigger_mode": {
+      "const": "cloud-build-triggers"
+    },
+    "manage_triggers": {
+      "const": true
+    },
+    "repo_name": {
+      "type": "string"
+    },
+    "main_branch": {
+      "type": "string"
+    },
+    "pull_request_target_branch": {
+      "type": "string"
+    },
+    "triggers_enabled": {
+      "const": true
+    },
+    "manual_approval_required": {
+      "type": "boolean"
+    },
+    "included_paths": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "excluded_paths": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  }
+}

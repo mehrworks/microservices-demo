@@ -1,0 +1,11 @@
+# yaml-language-server: $schema=./schema/adopt-existing.schema.json
+
+project_id: REPLACE_WITH_PROJECT_ID
+# project_number: "REPLACE_IF_NEEDED"
+
+# Keep the API list minimal unless this repo truly needs more.
+# enabled_apis:
+#   - artifactregistry.googleapis.com
+#   - cloudbuild.googleapis.com
+#   - compute.googleapis.com
+#   - container.googleapis.com

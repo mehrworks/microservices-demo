@@ -14,7 +14,8 @@
 
 # Dormant scaffold note:
 # This branch keeps the original multi-service repo shape as reference, but only
-# productcatalogservice is active in the CI/deploy loop for now.
+# `frontend` (catalog-only mode) and `productcatalogservice` are active in the
+# CI/deploy loop for now.
 # When you add or remove active services later, update this workflow together
 # with skaffold.yaml, kubernetes-manifests/kustomization.yaml,
 # kustomize/base/kustomization.yaml, and the service-specific waits/smoke checks
@@ -26,14 +27,18 @@ on:
   pull_request:
     branches:
       - main
-    paths-ignore:
-      - '**/README.md'
-      - 'kustomize/**'
-      - '.github/workflows/kustomize-build-ci.yaml'
-      - 'terraform/**'
-      - '.github/workflows/terraform-validate-ci.yaml'
-      - 'helm-chart/**'
-      - '.github/workflows/helm-chart-ci.yaml'
+    paths:
+      - 'src/frontend/**'
+      - 'src/productcatalogservice/**'
+      - 'skaffold.yaml'
+      - 'kubernetes-manifests/**'
+      - 'kustomize/base/**'
+      - 'kustomize/kustomization.yaml'
+      - 'release/kubernetes-manifests.yaml'
+      - 'config/gke-exposure/**'
+      - 'cloudbuild.yaml'
+      - '.github/workflows/ci-main.yaml'
+      - '.github/workflows/ci-pr.yaml'
 
 # Ensure this workflow only runs for the most recent commit of a pull-request
 concurrency:
@@ -58,11 +63,11 @@ jobs:
     - name: Go Unit Tests
       timeout-minutes: 10
       run: |
-        # Dormant scaffold mode: only productcatalogservice stays active.
-        for GO_PACKAGE in "productcatalogservice"; do
+        # Dormant scaffold mode: only frontend + productcatalogservice stay active.
+        for GO_PACKAGE in "frontend" "productcatalogservice"; do
           echo "Testing $GO_PACKAGE..."
           pushd src/$GO_PACKAGE
-          go test
+          go test ./...
           popd
         done
         # Previously active in this workflow:
@@ -102,7 +107,8 @@ jobs:
         EOF
         echo Deploying application
         skaffold config set --global local-cluster false
-        # Dormant scaffold mode: skip the full-app network-policies profile.
+        # Dormant scaffold mode: skip the full-app network-policies profile and
+        # deploy the thin public edge + productcatalogservice only.
         skaffold run --default-repo=us-docker.pkg.dev/$PROJECT_ID/refs/pull/$PR_NUMBER --tag=$PR_NUMBER --namespace=$NAMESPACE
       env:
         ACTIONS_ALLOW_UNSECURE_COMMANDS: true
@@ -115,7 +121,8 @@ jobs:
       run: |
         set -x
         kubectl config set-context --current --namespace=$NAMESPACE
-        # Dormant scaffold mode: only productcatalogservice is expected here.
+        # Dormant scaffold mode: only frontend + productcatalogservice are expected here.
+        kubectl wait --for=condition=available --timeout=1000s deployment/frontend
         kubectl wait --for=condition=available --timeout=1000s deployment/productcatalogservice
         # Previously active waits retained as commented history:
         # kubectl wait --for=condition=available --timeout=1000s deployment/redis-cart
@@ -129,9 +136,31 @@ jobs:
         # kubectl wait --for=condition=available --timeout=1000s deployment/paymentservice
         # kubectl wait --for=condition=available --timeout=1000s deployment/recommendationservice
         # kubectl wait --for=condition=available --timeout=1000s deployment/shippingservice
-    # Dormant scaffold mode: the old staging/smoke/comment steps depended on
-    # frontend + loadgenerator. Keep them as commented history until those
-    # services return to the active loop.
+    - name: Smoke Test Catalog Frontend
+      timeout-minutes: 10
+      run: |
+        set -euxo pipefail
+        kubectl config set-context --current --namespace=$NAMESPACE
+        kubectl port-forward service/frontend 18080:80 >/tmp/frontend-port-forward.log 2>&1 &
+        PORT_FORWARD_PID=$!
+        cleanup() {
+          kill "$PORT_FORWARD_PID" >/dev/null 2>&1 || true
+        }
+        trap cleanup EXIT
+
+        for _ in $(seq 1 30); do
+          if curl -fsS http://127.0.0.1:18080/_healthz >/dev/null; then
+            break
+          fi
+          sleep 2
+        done
+
+        curl -fsS http://127.0.0.1:18080/ >/tmp/frontend-home.html
+        grep -q "Catalog-only mode is active" /tmp/frontend-home.html
+        grep -q "Hot Products" /tmp/frontend-home.html
+    # Dormant scaffold mode: the old staging/comment steps depended on a broader
+    # full-app public surface. Keep them as commented history until that surface
+    # returns to the active loop.
     # - name: Query EXTERNAL_IP for staging
     #   timeout-minutes: 5
     #   run: |

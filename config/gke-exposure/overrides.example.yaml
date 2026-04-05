@@ -1,0 +1,22 @@
+# yaml-language-server: $schema=./schema/proof-bind.schema.json
+
+# Copy this file to overrides.yaml and replace the project-specific values.
+# Branch defaults for region, cluster, namespace, repo, and service mode are
+# already encoded here.
+
+project_id: REPLACE_WITH_GCP_PROJECT_ID
+region: europe-west3
+cluster: msdemo-public
+namespace: msdemo-public
+artifact_registry_repository: services
+
+default_repo: europe-west3-docker.pkg.dev/REPLACE_WITH_GCP_PROJECT_ID/services
+frontend_public_base_url: http://REPLACE_WITH_FRONTEND_EXTERNAL_IP
+
+frontend:
+  mode: catalog-only
+  service_name: frontend
+  public_service_name: frontend-external
+
+productcatalogservice:
+  service_name: productcatalogservice

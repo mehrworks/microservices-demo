@@ -1,0 +1,22 @@
+# yaml-language-server: $schema=../../../infra/2-iam/schema/runtime.schema.json
+
+project_id: null
+region: europe-west3
+
+service_accounts:
+  deployer:
+    create: false
+    email: null
+    account_id: msdemo-deployer
+    display_name: Microservices Demo Deployer
+    description: Optional deploy identity for CI or manual delivery.
+  runtime:
+    create: false
+    email: null
+    account_id: msdemo-runtime
+    display_name: Microservices Demo Runtime
+    description: Optional runtime identity for future workload-level service accounts.
+
+service_account_project_roles:
+  deployer: []
+  runtime: []

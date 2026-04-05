@@ -1,0 +1,77 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "IAM proof bind",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "project_id"
+  ],
+  "properties": {
+    "project_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "region": {
+      "type": "string"
+    },
+    "service_accounts": {
+      "$ref": "#/defs/serviceAccounts"
+    },
+    "service_account_project_roles": {
+      "$ref": "#/defs/serviceAccountRoles"
+    }
+  },
+  "defs": {
+    "serviceAccounts": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "deployer": {
+          "$ref": "#/defs/serviceAccount"
+        },
+        "runtime": {
+          "$ref": "#/defs/serviceAccount"
+        }
+      }
+    },
+    "serviceAccount": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "create": {
+          "type": "boolean"
+        },
+        "email": {
+          "type": "string"
+        },
+        "account_id": {
+          "type": "string"
+        },
+        "display_name": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        }
+      }
+    },
+    "serviceAccountRoles": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "deployer": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "runtime": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

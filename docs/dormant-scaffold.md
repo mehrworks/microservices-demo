@@ -2,7 +2,7 @@
 
 > Branch context: `spike/dormant-scaffold-v2`
 
-This branch keeps the original multi-service repository shape intact as a **reference scaffold**, while narrowing the **active loop** to `productcatalogservice` only.
+This branch keeps the original multi-service repository shape intact as a **reference scaffold**, while narrowing the **active loop** to a thin public path: `frontend` in `catalog-only` mode plus `productcatalogservice`.
 
 The goal is to preserve the old service bodies, deployment layout, CI history, and release knowledge so services can be reactivated or replaced gradually later, without prematurely rewriting the whole repo around one service.
 
@@ -10,32 +10,34 @@ The goal is to preserve the old service bodies, deployment layout, CI history, a
 
 ### Active right now
 
-Only `productcatalogservice` is active in the current loop.
+`frontend` and `productcatalogservice` are active in the current loop.
 
 That currently means:
 
 - `skaffold.yaml`
-  - only `productcatalogservice` is active
+  - only `frontend` and `productcatalogservice` are active
   - other service artifacts remain in place as commented history
 - `kubernetes-manifests/kustomization.yaml`
-  - only `productcatalogservice.yaml` is active
+  - only `frontend.yaml` and `productcatalogservice.yaml` are active
 - `kustomize/base/kustomization.yaml`
-  - only `productcatalogservice.yaml` is active
+  - only `frontend.yaml` and `productcatalogservice.yaml` are active
 - `release/kubernetes-manifests.yaml`
-  - narrowed so the upstream-style `kubectl apply -f ./release/kubernetes-manifests.yaml` path still works for the active service only
+  - narrowed so the active public path stays synchronized in one release reference file, even though direct `kubectl apply -f` still needs image rewriting first
 - `.github/workflows/ci-main.yaml`
-  - only `productcatalogservice` is tested/deployed/waited on
+  - only `frontend` and `productcatalogservice` are tested/deployed/waited on
   - older full-app flow is preserved as comments
 - `.github/workflows/ci-pr.yaml`
   - same idea for PR flow
 
 ### Runtime policy
 
-For the active service on this branch, runtime behavior is controlled at the **manifest layer**, not by rewriting vendor source semantics.
+For the active services on this branch, runtime behavior is controlled at the **manifest layer**, not by rewriting vendor source semantics.
 
 Current manifest policy:
 
-- profiler is off via `DISABLE_PROFILER=1`
+- `frontend` runs with `FRONTEND_MODE=catalog-only`
+- `frontend` keeps only `PRODUCT_CATALOG_SERVICE_ADDR` in the active env surface
+- profiler is off via `DISABLE_PROFILER=1` for `productcatalogservice` and `ENABLE_PROFILER=0` for `frontend`
 - tracing is off because `ENABLE_TRACING` is omitted
 - AlloyDB remains dormant unless its environment is explicitly wired in later
 
@@ -84,19 +86,21 @@ Prefer **commenting services in or out** rather than deleting their surrounding 
 
 ## Bootstrap proof (GKE)
 
-This branch supports both familiar upstream entry styles, narrowed to the
-active service only:
+This branch keeps the original release manifest in sync with the active surface,
+but the supported bootstrap proof path is the Skaffold-driven one:
 
-- upstream-style release path: `kubectl apply -f ./release/kubernetes-manifests.yaml`
-- upstream-style dev path: `skaffold run --default-repo=...`
+- supported proof path: `skaffold run --default-repo=...`
+- retained release reference: `./release/kubernetes-manifests.yaml` tracks the same resources, but its bare image names must be rewritten before direct `kubectl apply`
+- fresh-account bootstrap entrypoint: `docs/gcp-bootstrap.md`
+- staged infra contract lane: `infra/` with inputs under `config/datasets/`, kept separate from the current runtime proof flow
 
 ### Goal
 
 Prove all of the following with the smallest possible scope:
 
 1. the repo branch deploys into a GCP project
-2. only `productcatalogservice` is active
-3. the service becomes reachable
+2. only `frontend` and `productcatalogservice` are active
+3. the public frontend becomes reachable
 4. one real gRPC request succeeds
 
 This is intentionally **not** a full app deployment.
@@ -105,12 +109,12 @@ This is intentionally **not** a full app deployment.
 
 - one small GKE cluster
 - one Artifact Registry repo
-- one active service: `productcatalogservice`
-- one validation call: `ListProducts`
+- two active services: `frontend` and `productcatalogservice`
+- one public HTTP validation call to the catalog-only frontend
+- one gRPC validation call: `ListProducts`
 
 ### What this proof does not include
 
-- no frontend
 - no DB / Cloud SQL
 - no service mesh
 - no multi-service restore
@@ -127,11 +131,24 @@ This is intentionally **not** a full app deployment.
 
 - `gcloud`
 - `kubectl`
+- `gke-gcloud-auth-plugin` for GKE `kubectl` access
 - `skaffold` **2.0.2+**
 - Docker if you want the local-build path
 - optional: `grpcurl` for the proof call
 
 ### Environment
+
+If you are starting from a fresh GCP account or project, use `docs/gcp-bootstrap.md`
+first. The steps below mirror that bootstrap path but stay here as the branch-local
+execution reference.
+
+Optional but recommended first step:
+
+1. copy `config/gke-exposure/overrides.example.yaml` to `config/gke-exposure/overrides.yaml`
+2. bind the real project/cluster/namespace/image values there
+3. mirror those values into the shell exports below
+
+The repo does not auto-load that YAML yet. It is the human-reviewed proof bind contract for this branch.
 
 ```bash
 cd /home/mpo/work/vendors/microservices-demo
@@ -139,9 +156,9 @@ git checkout spike/dormant-scaffold-v2
 
 export PROJECT_ID="<your-gcp-project-id>"
 export REGION="europe-west3"
-export CLUSTER="msdemo-poc"
+export CLUSTER="msdemo-public"
 export AR_REPO="services"
-export NAMESPACE="msdemo-poc"
+export NAMESPACE="msdemo-public"
 
 gcloud config set project "$PROJECT_ID"
 ```
@@ -211,31 +228,11 @@ Optional:
 kubectl config set-context --current --namespace="$NAMESPACE"
 ```
 
-### 4) Build and deploy the active service
+### 4) Build and deploy the active surface
 
-You have two valid entry styles on this branch.
-
-#### Option A — upstream-style release path
-
-If you want to stay closest to the upstream README shape, first build and push
-`productcatalogservice`, then apply the narrowed release manifest.
-
-Build and push the image:
-
-```bash
-skaffold build \
-  --default-repo "${REGION}-docker.pkg.dev/${PROJECT_ID}/${AR_REPO}"
-```
-
-Then deploy with the upstream-style command:
-
-```bash
-kubectl apply -f ./release/kubernetes-manifests.yaml -n "$NAMESPACE"
-```
-
-#### Option B — upstream-style dev path via Skaffold run
-
-Preferred if you want Skaffold to handle build + deploy together.
+Use the Skaffold path for the working branch proof. It is the smallest accurate
+flow for this branch because Skaffold handles image tagging and manifest image
+rewrites together.
 
 ```bash
 skaffold run \
@@ -246,6 +243,9 @@ skaffold run \
 Notes:
 - first build/deploy can take a while
 - if local Docker/build is slow or problematic, use the `gcb` fallback below
+- `release/kubernetes-manifests.yaml` remains the synchronized reference for the
+  active surface, but direct `kubectl apply -f` needs manual image rewriting
+  before it is usable on a clean GKE cluster
 
 #### Fallback: Google Cloud Build
 
@@ -258,12 +258,20 @@ skaffold run -p gcb \
 ```
 
 Because this branch comments out the other services in the active loop, either
-path should only build and deploy `productcatalogservice`.
+path should only build and deploy `frontend` plus `productcatalogservice`.
 
 ### 5) Wait for readiness
 
 ```bash
 kubectl get all -n "$NAMESPACE"
+```
+
+```bash
+kubectl wait \
+  --for=condition=available \
+  deployment/frontend \
+  --timeout=600s \
+  -n "$NAMESPACE"
 ```
 
 ```bash
@@ -277,10 +285,28 @@ kubectl wait \
 Check logs:
 
 ```bash
+kubectl logs deployment/frontend -n "$NAMESPACE" --tail=100
+```
+
+```bash
 kubectl logs deployment/productcatalogservice -n "$NAMESPACE" --tail=100
 ```
 
-### 6) Make one real proof call
+### 6) Make one public HTTP proof call
+
+Wait for the public `LoadBalancer` IP and fetch the catalog-only frontend:
+
+```bash
+kubectl get service frontend-external -n "$NAMESPACE"
+```
+
+Once an external IP appears, open `http://EXTERNAL_IP` in a browser, or use:
+
+```bash
+curl -fsS "http://EXTERNAL_IP/" | grep "Catalog-only mode is active"
+```
+
+### 7) Make one real gRPC proof call
 
 This service is gRPC, so the simplest proof call uses `grpcurl`.
 
@@ -315,7 +341,7 @@ grpcurl \
   hipstershop.ProductCatalogService/SearchProducts
 ```
 
-### 7) If `grpcurl` is not installed
+### 8) If `grpcurl` is not installed
 
 #### Option A: install it
 
@@ -342,7 +368,9 @@ docker run --rm --network host \
 This proof is successful if:
 
 - the cluster exists
+- `frontend` becomes `Available`
 - `productcatalogservice` becomes `Available`
+- the public frontend is reachable
 - logs look healthy
 - `ListProducts` returns data
 

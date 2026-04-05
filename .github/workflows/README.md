@@ -3,11 +3,11 @@
 > **Dormant scaffold note**
 >
 > This branch keeps the original multi-service repo shape as reference, but only
-> `productcatalogservice` is active in the current CI/deploy loop. The older
-> full-app workflow steps remain in the workflow YAML files as commented history.
-> When you add or remove active services later, update the workflow files
-> together with `skaffold.yaml`, `kubernetes-manifests/kustomization.yaml`, and
-> `kustomize/base/kustomization.yaml`.
+> `frontend` (catalog-only mode) and `productcatalogservice` are active in the
+> current CI/deploy loop. The older full-app workflow steps remain in the
+> workflow YAML files as commented history. When you add or remove active
+> services later, update the workflow files together with `skaffold.yaml`,
+> `kubernetes-manifests/kustomization.yaml`, and `kustomize/base/kustomization.yaml`.
 
 This page describes the CI/CD workflows for the Online Boutique app, which run in [Github Actions](https://github.com/GoogleCloudPlatform/microservices-demo/actions).
 
@@ -15,8 +15,10 @@ This page describes the CI/CD workflows for the Online Boutique app, which run i
 
 On `spike/dormant-scaffold-v2`, treat the rest of this document as **historical full-app workflow reference**. The current active branch behavior is narrower:
 
-- only `productcatalogservice` is active in CI/deploy waits
-- full-app smoke/staging behavior stays preserved in workflow YAML as commented history
+- `frontend` and `productcatalogservice` are active in CI/deploy waits
+- CI smoke tests now verify the catalog-only frontend via port-forward
+- full-app staging/comment behavior stays preserved in workflow YAML as commented history
+- infra/config contract changes now have a separate non-GKE validation lane in `infra-contracts.yaml`
 - the canonical branch guide is [`docs/dormant-scaffold.md`](/docs/dormant-scaffold.md)
 
 ## Infrastructure
@@ -33,6 +35,22 @@ We also host a test GKE cluster, which is where the deploy tests run. Every PR h
 
 These tests run on every commit for every open PR, as well as any commit to main / any release branch. Currently, this workflow runs only Go unit tests.
 
+### Infra Contract Checks - [infra-contracts.yaml](infra-contracts.yaml)
+
+This workflow runs only for staged infra/config changes and intentionally avoids
+real GKE deployment work. It validates the repo-shape lane by running:
+
+1. profile-bundle validation
+2. `terraform fmt -check -recursive infra`
+3. `terraform init -backend=false -input=false`
+4. `terraform validate`
+5. `terraform plan -input=false -lock=false -no-color`
+
+for `infra/1-project`, `infra/2-iam`, `infra/3-gke`, and `infra/4-ci`.
+
+The local equivalent is `docs/bootstrap/validate-infra-contracts.sh`, and the
+default operator wrapper is `docs/bootstrap/staged-infra-cycle.sh`.
+
 
 ### Deploy Tests- [ci-pr.yaml](ci-pr.yaml)
 
@@ -40,9 +58,8 @@ These tests run on every commit for every open PR, as well as any commit to main
 
 1. Creates a dedicated GKE namespace for that PR, if it doesn't already exist, in the PR GKE cluster.
 2. Uses `skaffold run` to build and push the images specific to that PR commit. Then skaffold deploys those images, via `kubernetes-manifests`, to the PR namespace in the test cluster.
-3. Tests to make sure all the pods start up and become ready.
-4. Gets the LoadBalancer IP for the frontend service.
-5. Comments that IP in the pull request, for staging.
+3. Tests to make sure the active pods start up and become ready.
+4. Port-forwards the internal `frontend` service and verifies the catalog-only home page loads.
 
 ### Push and Deploy Latest - [push-deploy](push-deploy.yml)
 

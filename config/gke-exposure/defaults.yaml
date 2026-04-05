@@ -1,0 +1,21 @@
+# yaml-language-server: $schema=./schema/proof-bind.schema.json
+
+# Reusable defaults for the lean GKE exposure proof on spike/dormant-scaffold-v2.
+# Environment-owned values should be set in overrides.yaml.
+
+region: europe-west3
+cluster: msdemo-public
+namespace: msdemo-public
+artifact_registry_repository: services
+
+active_services:
+  - frontend
+  - productcatalogservice
+
+frontend:
+  mode: catalog-only
+  service_name: frontend
+  public_service_name: frontend-external
+
+productcatalogservice:
+  service_name: productcatalogservice

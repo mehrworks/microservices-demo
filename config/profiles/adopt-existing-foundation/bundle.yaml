@@ -1,0 +1,10 @@
+# yaml-language-server: $schema=../schema/profile-bundle.schema.json
+
+name: adopt-existing-foundation
+description: Bundle for environments where core foundation resources already exist.
+
+datasets:
+  project: config/datasets/project/overrides.adopt-existing.example.yaml
+  iam: config/datasets/iam/overrides.adopt-existing.example.yaml
+  gke: config/datasets/gke/overrides.adopt-existing.example.yaml
+  ci: config/datasets/ci/overrides.placeholder-only.example.yaml

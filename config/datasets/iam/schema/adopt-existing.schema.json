@@ -1,0 +1,68 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "IAM adopt-existing bind",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "project_id",
+    "service_accounts"
+  ],
+  "properties": {
+    "project_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "region": {
+      "type": "string"
+    },
+    "service_accounts": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "deployer": {
+          "$ref": "#/defs/adoptedServiceAccount"
+        },
+        "runtime": {
+          "$ref": "#/defs/adoptedServiceAccount"
+        }
+      }
+    },
+    "service_account_project_roles": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "deployer": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "runtime": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  },
+  "defs": {
+    "adoptedServiceAccount": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "create",
+        "email"
+      ],
+      "properties": {
+        "create": {
+          "const": false
+        },
+        "email": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    }
+  }
+}

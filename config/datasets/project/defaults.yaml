@@ -1,0 +1,11 @@
+# yaml-language-server: $schema=../../../infra/1-project/schema/runtime.schema.json
+
+project_id: null
+project_number: null
+region: europe-west3
+
+enabled_apis:
+  - artifactregistry.googleapis.com
+  - cloudbuild.googleapis.com
+  - compute.googleapis.com
+  - container.googleapis.com

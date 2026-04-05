@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "CI placeholder-only bind",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "project_id",
+    "repo_owner"
+  ],
+  "properties": {
+    "project_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "repo_owner": {
+      "type": "string",
+      "minLength": 1
+    },
+    "provider": {
+      "const": "github-actions"
+    },
+    "trigger_mode": {
+      "const": "placeholder"
+    },
+    "manage_triggers": {
+      "const": false
+    },
+    "triggers_enabled": {
+      "const": false
+    },
+    "manual_approval_required": {
+      "type": "boolean"
+    }
+  }
+}

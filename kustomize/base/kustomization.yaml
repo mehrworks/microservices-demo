@@ -20,7 +20,7 @@ resources:
 # - checkoutservice.yaml
 # - currencyservice.yaml
 # - emailservice.yaml
-# - frontend.yaml
+- frontend.yaml
 # - loadgenerator.yaml
 # - paymentservice.yaml
 - productcatalogservice.yaml

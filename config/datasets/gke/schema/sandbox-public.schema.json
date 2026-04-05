@@ -1,0 +1,54 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "GKE sandbox-public bind",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "project_id"
+  ],
+  "properties": {
+    "project_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "artifact_registry": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "create": {
+          "type": "boolean"
+        }
+      }
+    },
+    "cluster": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "create": {
+          "type": "boolean"
+        }
+      }
+    },
+    "hardening": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "private_nodes_enabled": {
+          "const": false
+        },
+        "master_ipv4_cidr": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "cloud_nat_enabled": {
+          "const": false
+        },
+        "public_load_balancer_enabled": {
+          "const": true
+        }
+      }
+    }
+  }
+}

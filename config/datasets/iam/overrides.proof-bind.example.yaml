@@ -1,0 +1,13 @@
+# yaml-language-server: $schema=./schema/proof-bind.schema.json
+
+project_id: REPLACE_WITH_PROJECT_ID
+
+service_accounts:
+  deployer:
+    create: true
+    # email: deployer@PROJECT_ID.iam.gserviceaccount.com
+
+service_account_project_roles:
+  deployer:
+    - roles/artifactregistry.writer
+    - roles/container.developer

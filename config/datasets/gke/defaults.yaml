@@ -1,0 +1,37 @@
+# yaml-language-server: $schema=../../../infra/3-gke/schema/runtime.schema.json
+
+project_id: null
+project_number: null
+region: europe-west3
+namespace: msdemo-public
+
+artifact_registry:
+  manage: true
+  create: false
+  repository_id: services
+  format: DOCKER
+  description: Microservices Demo delivery images
+  readers: []
+  writers: []
+
+cluster:
+  manage: true
+  create: false
+  name: msdemo-public
+  autopilot: true
+
+network:
+  manage: false
+  network_name: default
+  subnetwork_name: null
+  subnet_cidr: null
+  pods_secondary_range_name: null
+  pods_secondary_cidr: null
+  services_secondary_range_name: null
+  services_secondary_cidr: null
+
+hardening:
+  private_nodes_enabled: false
+  master_ipv4_cidr: null
+  cloud_nat_enabled: false
+  public_load_balancer_enabled: true

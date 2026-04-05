@@ -1,0 +1,8 @@
+# yaml-language-server: $schema=./schema/trigger-bind.schema.json
+
+project_id: REPLACE_WITH_PROJECT_ID
+repo_owner: REPLACE_WITH_GITHUB_OWNER
+provider: cloud-build
+trigger_mode: cloud-build-triggers
+# manage_triggers: true
+# triggers_enabled: true

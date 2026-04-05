@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=../../../infra/4-ci/schema/runtime.schema.json
+
+project_id: null
+region: europe-west3
+repo_owner: null
+repo_name: microservices-demo
+provider: github-actions
+trigger_mode: placeholder
+manage_triggers: false
+main_branch: main
+pull_request_target_branch: main
+triggers_enabled: false
+manual_approval_required: true
+
+included_paths:
+  - src/frontend/**
+  - src/productcatalogservice/**
+  - kubernetes-manifests/**
+  - kustomize/**
+  - config/gke-exposure/**
+  - config/datasets/**
+  - config/profiles/**
+  - infra/**
+  - docs/architecture/**
+  - docs/bootstrap/**
+
+excluded_paths: []
