@@ -21,6 +21,8 @@ lane and the current runtime proof lane.
   - checks that every profile bundle is structurally valid and points at real dataset examples
 - `render-gke-proof-bind.sh`
   - renders the local runtime proof bind from exported stage contracts and proof mode
+- `job-control-smoke.sh`
+  - exercises the dormant internal operator/worker simulation path against a running frontend
 
 ## Recommended use right now
 
@@ -33,6 +35,14 @@ For the current stable operator baseline:
 
 The normal validation path already includes profile-bundle and hybrid contract
 artifact checks.
+
+For manual hybrid control-plane smoke testing against a running frontend with
+`JOB_CONTROL_OPERATOR_TOKEN` and `JOB_CONTROL_WORKER_TOKEN` set, use:
+
+```bash
+JOB_CONTROL_OPERATOR_TOKEN=... JOB_CONTROL_WORKER_TOKEN=... \
+  ./docs/bootstrap/job-control-smoke.sh
+```
 
 Use `docs/architecture/infra-operator-runbook.md` as the single operator flow,
 and `docs/architecture/acceptance-environment-matrix.md` for expected results by environment.

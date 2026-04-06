@@ -33,6 +33,8 @@ import (
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
+
+	frontendjobcontrol "github.com/GoogleCloudPlatform/microservices-demo/src/frontend/jobcontrol"
 )
 
 const (
@@ -86,6 +88,7 @@ type frontendServer struct {
 	collectorConn *grpc.ClientConn
 
 	shoppingAssistantSvcAddr string
+	jobControlController     *frontendjobcontrol.Controller
 }
 
 func main() {
@@ -105,6 +108,7 @@ func main() {
 	svc := new(frontendServer)
 	activeFrontendMode = loadFrontendModeFromEnv()
 	log.WithField("frontend_mode", activeFrontendMode).Info("frontend mode configured")
+	svc.jobControlController = configureJobControlController(log)
 
 	otel.SetTextMapPropagator(
 		propagation.NewCompositeTextMapPropagator(
@@ -165,6 +169,7 @@ func main() {
 	r.HandleFunc(baseUrl+"/robots.txt", func(w http.ResponseWriter, _ *http.Request) { fmt.Fprint(w, "User-agent: *\nDisallow: /") })
 	r.HandleFunc(baseUrl+"/_healthz", func(w http.ResponseWriter, _ *http.Request) { fmt.Fprint(w, "ok") })
 	r.HandleFunc(baseUrl+"/product-meta/{ids}", svc.getProductByID).Methods(http.MethodGet)
+	registerJobControlRoutes(r, baseUrl, svc)
 	if catalogOnlyModeEnabled() {
 		unavailable := svc.catalogOnlyUnavailableHandler
 		r.HandleFunc(baseUrl+"/cart", unavailable("cart")).Methods(http.MethodGet, http.MethodHead, http.MethodPost)

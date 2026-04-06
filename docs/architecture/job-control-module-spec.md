@@ -6,6 +6,18 @@ for the hybrid job-control surface.
 It still does not introduce a new running service. It describes the internal
 module responsibilities the eventual cloud-side implementation should keep.
 
+The first concrete implementation host for this module boundary now lives in:
+
+- `src/frontend/jobcontrol/`
+
+The first handler-facing adapter in that host is:
+
+- `src/frontend/jobcontrol/controller.go`
+
+The first dormant internal route host that uses that adapter lives in:
+
+- `src/frontend/jobcontrol_http.go`
+
 ## Goal
 
 Make the future job-control implementation small, explicit, and modular before
@@ -19,6 +31,9 @@ The first implementation should be decomposed into these responsibilities:
    - translate HTTP requests and responses
    - bind to the payload contracts in `config/contracts/job-control/`
    - avoid embedding claim/lease or persistence rules directly in handlers
+
+In the current first cut, `Controller` is the handler-facing adapter that verifies
+operator identity and delegates submit/get/cancel behavior into the underlying service.
 
 2. Auth layer
    - validate operator bearer auth for user-facing endpoints
@@ -97,4 +112,5 @@ The persistence-facing contract for those operations is defined in
 - lifecycle rules: `docs/architecture/job-lifecycle-contract.md`
 - worker/lease assumptions: `docs/architecture/local-worker-agent.md`
 - storage boundary: `docs/architecture/job-control-storage-boundary.md`
+- cloud-side package host: `src/frontend/jobcontrol/`
 - executable reference package: `tools/jobcontrolref/`

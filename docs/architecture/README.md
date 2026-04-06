@@ -34,6 +34,12 @@ infra lane and the current app-first delivery model.
 14. `job-control-storage-boundary.md`
    - defines the first persistence-facing boundary for the cloud-side control plane
 
+The first concrete cloud-side package host for these hybrid contracts now lives
+under `src/frontend/jobcontrol/`.
+
+The first handler-facing adapter inside that host lives in
+`src/frontend/jobcontrol/controller.go`.
+
 The local command companion for these docs is
 `docs/bootstrap/validate-infra-contracts.sh`.
 

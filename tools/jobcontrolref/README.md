@@ -3,6 +3,9 @@
 This package is a tiny in-memory reference implementation for the hybrid
 job-control contracts.
 
+It now wraps the first cloud-side package host in `src/frontend/jobcontrol/`
+rather than owning a separate logic copy.
+
 It is intentionally not a running service. Its purpose is to make the new
 contract stack more concrete by modeling:
 

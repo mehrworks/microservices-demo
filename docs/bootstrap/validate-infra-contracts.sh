@@ -189,6 +189,9 @@ log "validating profile bundles"
 log "validating contract artifacts"
 validate_contract_artifacts
 
+log "validating frontend job-control package"
+(cd "$ROOT_DIR/src/frontend" && go test ./jobcontrol/... >/dev/null)
+
 log "validating job-control reference package"
 (cd "$ROOT_DIR/tools/jobcontrolref" && go test ./... >/dev/null)
 
