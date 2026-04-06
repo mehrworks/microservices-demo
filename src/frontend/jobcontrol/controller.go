@@ -48,13 +48,30 @@ func (c *Controller) Cancel(rawToken, jobID string, now time.Time) (CancelJobRes
 	return c.service.RequestCancel(jobID, now)
 }
 
-func (c *Controller) ClaimNext(rawToken string, now time.Time) (ClaimNextResponse, error) {
+func (c *Controller) ClaimNext(rawToken string, requested WorkerIdentity, now time.Time) (ClaimNextResponse, error) {
 	worker, err := c.verifyWorker(rawToken)
 	if err != nil {
 		return ClaimNextResponse{}, err
 	}
+	worker, err = mergeWorkerIdentity(worker, requested)
+	if err != nil {
+		return ClaimNextResponse{}, fmt.Errorf("verify worker: %w", err)
+	}
 
 	return c.service.ClaimNext(worker, now)
+}
+
+func (c *Controller) RenewLease(rawToken, jobID string, requested WorkerIdentity, now time.Time) (LeaseRenewResponse, error) {
+	worker, err := c.verifyWorker(rawToken)
+	if err != nil {
+		return LeaseRenewResponse{}, err
+	}
+	worker, err = mergeWorkerIdentity(worker, requested)
+	if err != nil {
+		return LeaseRenewResponse{}, fmt.Errorf("verify worker: %w", err)
+	}
+
+	return c.service.RenewLease(jobID, worker, now)
 }
 
 func (c *Controller) UpdateStatus(rawToken, jobID string, update StatusUpdate, now time.Time) (JobStoreRecord, error) {
@@ -104,4 +121,37 @@ func (c *Controller) verifyWorker(rawToken string) (WorkerIdentity, error) {
 	}
 
 	return identity, nil
+}
+
+func mergeWorkerIdentity(verified, requested WorkerIdentity) (WorkerIdentity, error) {
+	resolved := verified
+
+	if requested.WorkerID != "" && requested.WorkerID != verified.WorkerID {
+		return WorkerIdentity{}, ErrUnauthorized
+	}
+	if requested.AuthSubject != "" && requested.AuthSubject != verified.AuthSubject {
+		return WorkerIdentity{}, ErrUnauthorized
+	}
+	if requested.AuthMode != "" && requested.AuthMode != verified.AuthMode {
+		return WorkerIdentity{}, ErrUnauthorized
+	}
+
+	if requested.AuthIssuer != "" {
+		resolved.AuthIssuer = requested.AuthIssuer
+	}
+	if requested.MachineName != "" {
+		resolved.MachineName = requested.MachineName
+	}
+	if requested.WorkerVersion != "" {
+		resolved.WorkerVersion = requested.WorkerVersion
+	}
+	resolved.SupportsCancel = requested.SupportsCancel || resolved.SupportsCancel
+	if len(requested.AcceptedJobTypes) > 0 {
+		resolved.AcceptedJobTypes = append([]string(nil), requested.AcceptedJobTypes...)
+	}
+	if requested.MaxLeaseSeconds > 0 {
+		resolved.MaxLeaseSeconds = requested.MaxLeaseSeconds
+	}
+
+	return resolved, nil
 }

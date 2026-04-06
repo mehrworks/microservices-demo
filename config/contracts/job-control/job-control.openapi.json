@@ -197,6 +197,59 @@
         }
       }
     },
+    "/v1/jobs/{job_id}/lease:renew": {
+      "post": {
+        "summary": "Renew a worker lease",
+        "operationId": "renewLease",
+        "security": [
+          {
+            "workerBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "job_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "./schema/renew-lease-request.schema.json"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Lease renewed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schema/renew-lease-response.schema.json"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Lease or state conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schema/error-envelope.schema.json"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/v1/jobs/{job_id}/status": {
       "post": {
         "summary": "Post a worker status update",

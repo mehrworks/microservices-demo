@@ -26,5 +26,6 @@ included_paths:
   - docs/architecture/**
   - docs/bootstrap/**
   - tools/jobcontrolref/**
+  - tools/jobcontrolworker/**
 
 excluded_paths: []

@@ -1,0 +1,10 @@
+{
+  "job_id": "job_0001",
+  "lease": {
+    "lease_id": "lease_job_0001_local-worker-1",
+    "issued_at": "2026-04-06T06:30:00Z",
+    "lease_expires_at": "2026-04-06T06:32:00Z",
+    "lease_duration_seconds": 120,
+    "renew_after_seconds": 96
+  }
+}

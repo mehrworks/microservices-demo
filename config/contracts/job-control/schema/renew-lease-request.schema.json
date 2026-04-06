@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/microservices-demo/job-control/renew-lease-request.schema.json",
+  "title": "Renew lease request",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "worker_id",
+    "auth_mode",
+    "auth_subject"
+  ],
+  "properties": {
+    "worker_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "auth_mode": {
+      "type": "string",
+      "enum": [
+        "bearer"
+      ]
+    },
+    "auth_subject": {
+      "type": "string",
+      "minLength": 1
+    },
+    "auth_issuer": {
+      "type": "string"
+    },
+    "machine_name": {
+      "type": "string"
+    },
+    "worker_version": {
+      "type": "string"
+    },
+    "max_lease_seconds": {
+      "type": "integer",
+      "minimum": 1
+    }
+  }
+}

@@ -50,3 +50,7 @@ type Store = frontendjobcontrol.Store
 func NewStore() *Store {
 	return frontendjobcontrol.NewStore()
 }
+
+func NewPersistentStore(statePath string) (*Store, error) {
+	return frontendjobcontrol.NewPersistentStore(statePath)
+}

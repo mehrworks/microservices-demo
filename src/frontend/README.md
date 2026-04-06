@@ -28,7 +28,7 @@ Current state:
 - the package exists and is tested
 - a bearer-token-gated internal route layer exists for submit/get/cancel plus worker simulation endpoints
 - no user-facing UI wiring exists yet
-- no persistence backend exists beyond the in-memory store
+- optional file-backed persistence now exists via `JOB_CONTROL_STATE_PATH`
 
 Enable the internal operator routes by setting:
 
@@ -37,6 +37,19 @@ Enable the internal operator routes by setting:
 Enable worker-simulation endpoints by also setting:
 
 - `JOB_CONTROL_WORKER_TOKEN`
+
+Optional worker identity settings for the internal API host:
+
+- `JOB_CONTROL_WORKER_ID`
+- `JOB_CONTROL_WORKER_SUBJECT`
+- `JOB_CONTROL_WORKER_ISSUER`
+- `JOB_CONTROL_WORKER_MACHINE_NAME`
+- `JOB_CONTROL_WORKER_VERSION`
+- `JOB_CONTROL_WORKER_MAX_LEASE_SECONDS`
+
+Enable file-backed state persistence by also setting:
+
+- `JOB_CONTROL_STATE_PATH`
 
 When set, the frontend registers:
 
@@ -48,10 +61,12 @@ When set, the frontend registers:
 When `JOB_CONTROL_WORKER_TOKEN` is also set, the frontend additionally registers:
 
 - `POST /internal/worker/claim`
+- `POST /internal/jobs/{job_id}/lease:renew`
 - `POST /internal/jobs/{job_id}/status`
 
-This is still only a manual/operator simulation path. It does not introduce a
-real local worker process yet.
+This route layer still supports a manual/operator simulation path. A separate
+real worker process now exists in `tools/jobcontrolworker/`, but these routes can
+still be exercised manually for debugging.
 
 For a manual end-to-end simulation against a running frontend, use:
 

@@ -15,6 +15,8 @@ Current contract artifacts cover:
 - lease
 - worker claim request
 - worker claim response
+- renew lease request
+- renew lease response
 - worker status update
 - job record
 - job store record
@@ -35,6 +37,8 @@ Current contract artifacts cover:
 - `schema/lease.schema.json`
 - `schema/claim-next-request.schema.json`
 - `schema/claim-next-response.schema.json`
+- `schema/renew-lease-request.schema.json`
+- `schema/renew-lease-response.schema.json`
 - `schema/status-update.schema.json`
 - `schema/job-record.schema.json`
 - `schema/job-store-record.schema.json`

@@ -98,6 +98,7 @@ func TestJobControlInternalRoutesRequireBearerToken(t *testing.T) {
 }
 
 func TestJobControlInternalWorkerSimulationFlow(t *testing.T) {
+	t.Setenv(jobControlWorkerTokenEnv, "worker-secret")
 	controller := frontendjobcontrol.NewController(
 		frontendjobcontrol.NewStaticBearerVerifier("operator-secret", "worker-secret"),
 		frontendjobcontrol.NewStore(),
@@ -119,7 +120,9 @@ func TestJobControlInternalWorkerSimulationFlow(t *testing.T) {
 	}
 
 	claimReq := httptest.NewRequest(http.MethodPost, "/internal/worker/claim", nil)
+	claimReq = httptest.NewRequest(http.MethodPost, "/internal/worker/claim", strings.NewReader(`{"worker_id":"worker:static-bearer","auth_mode":"bearer","auth_subject":"worker:static-bearer"}`))
 	claimReq.Header.Set("Authorization", "Bearer worker-secret")
+	claimReq.Header.Set("Content-Type", "application/json")
 	claimRec := httptest.NewRecorder()
 	router.ServeHTTP(claimRec, claimReq)
 
@@ -163,5 +166,81 @@ func TestJobControlInternalWorkerSimulationFlow(t *testing.T) {
 	}
 	if resultResp.ResultRef.URI != "file:///tmp/output.json" {
 		t.Fatalf("result uri = %q, want %q", resultResp.ResultRef.URI, "file:///tmp/output.json")
+	}
+}
+
+func TestJobControlInternalRenewLeaseRoute(t *testing.T) {
+	t.Setenv(jobControlWorkerTokenEnv, "worker-secret")
+	controller := frontendjobcontrol.NewController(
+		frontendjobcontrol.NewStaticBearerVerifier("operator-secret", "worker-secret"),
+		frontendjobcontrol.NewStore(),
+	)
+
+	fe := &frontendServer{jobControlController: controller}
+	router := mux.NewRouter()
+	registerJobControlRoutes(router, "", fe)
+
+	submitReq := httptest.NewRequest(http.MethodPost, "/internal/jobs", strings.NewReader(`{"job_type":"local-analysis","payload":{"input":"demo"}}`))
+	submitReq.Header.Set("Authorization", "Bearer operator-secret")
+	submitReq.Header.Set("Content-Type", "application/json")
+	submitRec := httptest.NewRecorder()
+	router.ServeHTTP(submitRec, submitReq)
+
+	var submitResp frontendjobcontrol.SubmitJobResponse
+	if err := json.NewDecoder(submitRec.Body).Decode(&submitResp); err != nil {
+		t.Fatalf("decode submit response: %v", err)
+	}
+
+	claimReq := httptest.NewRequest(http.MethodPost, "/internal/worker/claim", strings.NewReader(`{"worker_id":"worker:static-bearer","auth_mode":"bearer","auth_subject":"worker:static-bearer","max_lease_seconds":120}`))
+	claimReq.Header.Set("Authorization", "Bearer worker-secret")
+	claimReq.Header.Set("Content-Type", "application/json")
+	claimRec := httptest.NewRecorder()
+	router.ServeHTTP(claimRec, claimReq)
+
+	if claimRec.Code != http.StatusOK {
+		t.Fatalf("claim status = %d, want %d", claimRec.Code, http.StatusOK)
+	}
+
+	renewReq := httptest.NewRequest(http.MethodPost, "/internal/jobs/"+submitResp.JobID+"/lease:renew", strings.NewReader(`{"worker_id":"worker:static-bearer","auth_mode":"bearer","auth_subject":"worker:static-bearer","max_lease_seconds":180}`))
+	renewReq.Header.Set("Authorization", "Bearer worker-secret")
+	renewReq.Header.Set("Content-Type", "application/json")
+	renewRec := httptest.NewRecorder()
+	router.ServeHTTP(renewRec, renewReq)
+
+	if renewRec.Code != http.StatusOK {
+		t.Fatalf("renew status = %d, want %d", renewRec.Code, http.StatusOK)
+	}
+
+	var renewResp frontendjobcontrol.LeaseRenewResponse
+	if err := json.NewDecoder(renewRec.Body).Decode(&renewResp); err != nil {
+		t.Fatalf("decode renew response: %v", err)
+	}
+	if renewResp.JobID != submitResp.JobID {
+		t.Fatalf("job id = %q, want %q", renewResp.JobID, submitResp.JobID)
+	}
+	if renewResp.Lease.LeaseDurationSeconds != 180 {
+		t.Fatalf("lease duration = %d, want %d", renewResp.Lease.LeaseDurationSeconds, 180)
+	}
+}
+
+func TestJobControlInternalWorkerRoutesRejectIdentityMismatch(t *testing.T) {
+	t.Setenv(jobControlWorkerTokenEnv, "worker-secret")
+	controller := frontendjobcontrol.NewController(
+		frontendjobcontrol.NewStaticBearerVerifier("operator-secret", "worker-secret"),
+		frontendjobcontrol.NewStore(),
+	)
+
+	fe := &frontendServer{jobControlController: controller}
+	router := mux.NewRouter()
+	registerJobControlRoutes(router, "", fe)
+
+	claimReq := httptest.NewRequest(http.MethodPost, "/internal/worker/claim", strings.NewReader(`{"worker_id":"worker:wrong","auth_mode":"bearer","auth_subject":"worker:wrong"}`))
+	claimReq.Header.Set("Authorization", "Bearer worker-secret")
+	claimReq.Header.Set("Content-Type", "application/json")
+	claimRec := httptest.NewRecorder()
+	router.ServeHTTP(claimRec, claimReq)
+
+	if claimRec.Code != http.StatusUnauthorized {
+		t.Fatalf("status = %d, want %d", claimRec.Code, http.StatusUnauthorized)
 	}
 }

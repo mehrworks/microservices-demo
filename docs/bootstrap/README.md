@@ -24,6 +24,8 @@ lane and the current runtime proof lane.
 - `job-control-smoke.sh`
   - exercises the dormant internal operator/worker simulation path against a running frontend
 
+The first real local worker process now lives in `tools/jobcontrolworker/`.
+
 ## Recommended use right now
 
 For the current stable operator baseline:
@@ -43,6 +45,9 @@ For manual hybrid control-plane smoke testing against a running frontend with
 JOB_CONTROL_OPERATOR_TOKEN=... JOB_CONTROL_WORKER_TOKEN=... \
   ./docs/bootstrap/job-control-smoke.sh
 ```
+
+Set `JOB_CONTROL_STATE_PATH` as well if you want the smoke flow to survive
+frontend restarts while staying file-backed and local.
 
 Use `docs/architecture/infra-operator-runbook.md` as the single operator flow,
 and `docs/architecture/acceptance-environment-matrix.md` for expected results by environment.

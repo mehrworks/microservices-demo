@@ -8,7 +8,7 @@ import (
 
 func TestClaimConflictAndLeaseExpiry(t *testing.T) {
 	store := NewStore()
-	now := time.Date(2026, 4, 5, 8, 0, 0, 0, time.UTC)
+	now := time.Now()
 
 	resp, err := store.Submit(SubmitJobRequest{
 		JobType:                 "local-analysis",
@@ -70,7 +70,7 @@ func TestClaimConflictAndLeaseExpiry(t *testing.T) {
 
 func TestApplyStatusAndResolveResultAccess(t *testing.T) {
 	store := NewStore()
-	now := time.Date(2026, 4, 5, 9, 0, 0, 0, time.UTC)
+	now := time.Now()
 
 	resp, err := store.Submit(SubmitJobRequest{
 		IdempotencyKey:            "job-key-1",
@@ -135,7 +135,7 @@ func TestApplyStatusAndResolveResultAccess(t *testing.T) {
 
 func TestCancelQueuedJob(t *testing.T) {
 	store := NewStore()
-	now := time.Date(2026, 4, 5, 10, 0, 0, 0, time.UTC)
+	now := time.Now()
 
 	resp, err := store.Submit(SubmitJobRequest{
 		JobType:     "local-analysis",

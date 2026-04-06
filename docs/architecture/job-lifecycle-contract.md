@@ -86,6 +86,12 @@ The first concrete API shape for this lifecycle is described in
 - whether partial results are allowed
 - how cancellation is represented when the worker cannot stop immediately
 
+Current implementation direction for stale-worker recovery:
+
+- lease expiry returns the running job to `queued`
+- the next claim increments `attempt`
+- lease renewal is expected before long-running work crosses the renewal threshold
+
 The first explicit worker/lease companion doc is:
 
 - `docs/architecture/local-worker-agent.md`

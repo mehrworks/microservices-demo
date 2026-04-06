@@ -1,0 +1,9 @@
+{
+  "worker_id": "local-worker-1",
+  "auth_mode": "bearer",
+  "auth_subject": "worker:local-worker-1",
+  "auth_issuer": "jobcontrolworker-local",
+  "machine_name": "devbox-01",
+  "worker_version": "0.2.0",
+  "max_lease_seconds": 120
+}

@@ -67,6 +67,17 @@ visible compare-and-swap or revision expectation.
 
 That is why `job-store-update` includes `expected_revision` explicitly.
 
+## Current implementation checkpoint
+
+The first concrete persistence implementation is still intentionally small:
+
+- inside `src/frontend/jobcontrol/`
+- file-backed only when `JOB_CONTROL_STATE_PATH` is set
+- otherwise in-memory
+
+This keeps the persistence step reversible while the control-plane boundary is
+still being proven.
+
 ## Non-goals
 
 - no database selection yet

@@ -19,7 +19,7 @@ That interface now lives in:
 
 ## Endpoints
 
-The first minimal interface includes five endpoints:
+The first minimal interface includes six endpoints:
 
 - `POST /v1/jobs`
   - submit a new job
@@ -29,8 +29,12 @@ The first minimal interface includes five endpoints:
   - request cancellation
 - `POST /v1/worker/claim`
   - allow the local worker to claim work pull-style
+- `POST /v1/jobs/{job_id}/lease:renew`
+  - allow the local worker to renew its lease before expiry
 - `POST /v1/jobs/{job_id}/status`
   - allow the local worker to report progress and terminal state
+- `POST /v1/jobs/{job_id}/lease:renew`
+  - allow the local worker to renew its lease before expiry
 
 ## Why this shape
 
@@ -81,11 +85,16 @@ The first manual worker-simulation layer also lives there and registers:
 
 when `JOB_CONTROL_WORKER_TOKEN` is configured.
 
-This still simulates the local-worker behavior from inside the cloud-side host; it
-does not mean a real local worker process exists yet.
+This route layer can still simulate local-worker behavior from inside the
+cloud-side host for debugging. A first real local worker process now also exists
+in `tools/jobcontrolworker/` and talks to the same internal API.
 
 For a manual smoke path that exercises this internal route set against a running
 frontend, use `docs/bootstrap/job-control-smoke.sh`.
+
+The first actual local worker client that can talk to these endpoints now lives in:
+
+- `tools/jobcontrolworker/`
 
 The next implementation-facing boundary for this API is described in
 `docs/architecture/job-control-module-spec.md`.

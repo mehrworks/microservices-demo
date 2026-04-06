@@ -43,11 +43,13 @@ real GKE deployment work. It validates the repo-shape lane by running:
 
 1. profile-bundle validation
 2. hybrid contract artifact validation
-3. `go test ./...` in `tools/jobcontrolref`
-4. `terraform fmt -check -recursive infra`
-5. `terraform init -backend=false -input=false`
-6. `terraform validate`
-7. `terraform plan -input=false -lock=false -no-color`
+3. `go test ./...` in `src/frontend/jobcontrol`
+4. `go test ./...` in `tools/jobcontrolref`
+5. `go test ./...` in `tools/jobcontrolworker`
+6. `terraform fmt -check -recursive infra`
+7. `terraform init -backend=false -input=false`
+8. `terraform validate`
+9. `terraform plan -input=false -lock=false -no-color`
 
 for `infra/1-project`, `infra/2-iam`, `infra/3-gke`, and `infra/4-ci`.
 

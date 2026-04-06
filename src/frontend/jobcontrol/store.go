@@ -1,8 +1,11 @@
 package jobcontrol
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
+	"os"
+	"path/filepath"
 	"sort"
 	"sync"
 	"time"
@@ -136,6 +139,11 @@ type ClaimNextResponse struct {
 	Job              *ClaimedJob `json:"job"`
 }
 
+type LeaseRenewResponse struct {
+	JobID string `json:"job_id"`
+	Lease Lease  `json:"lease"`
+}
+
 type StatusUpdate struct {
 	JobID           string           `json:"job_id,omitempty"`
 	WorkerID        string           `json:"worker_id,omitempty"`
@@ -158,6 +166,8 @@ type Store struct {
 	jobs         map[string]*storedJob
 	idempotency  map[string]string
 	nextSequence int
+	statePath    string
+	now          func() time.Time
 }
 
 type storedJob struct {
@@ -173,7 +183,23 @@ func NewStore() *Store {
 	return &Store{
 		jobs:        make(map[string]*storedJob),
 		idempotency: make(map[string]string),
+		now:         time.Now,
 	}
+}
+
+func NewPersistentStore(statePath string) (*Store, error) {
+	store := NewStore()
+	store.statePath = statePath
+
+	if statePath == "" {
+		return store, nil
+	}
+
+	if err := store.load(); err != nil {
+		return nil, err
+	}
+
+	return store, nil
 }
 
 func (s *Store) Submit(req SubmitJobRequest, now time.Time) (SubmitJobResponse, error) {
@@ -219,6 +245,9 @@ func (s *Store) Submit(req SubmitJobRequest, now time.Time) (SubmitJobResponse, 
 	if req.IdempotencyKey != "" {
 		s.idempotency[req.IdempotencyKey] = jobID
 	}
+	if err := s.saveLocked(); err != nil {
+		return SubmitJobResponse{}, err
+	}
 
 	return SubmitJobResponse{JobID: jobID, State: StateQueued, JobRef: jobRef(jobID)}, nil
 }
@@ -227,7 +256,7 @@ func (s *Store) ClaimNext(worker WorkerIdentity, now time.Time) (ClaimNextRespon
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	s.expireLeasesLocked(now)
+	changed := s.expireLeasesLocked(now)
 
 	jobIDs := make([]string, 0, len(s.jobs))
 	for jobID := range s.jobs {
@@ -254,6 +283,9 @@ func (s *Store) ClaimNext(worker WorkerIdentity, now time.Time) (ClaimNextRespon
 		entry.record.ClaimedByAuthSubject = stringPtr(worker.AuthSubject)
 		entry.record.Lease = &lease
 		entry.revision++
+		if err := s.saveLocked(); err != nil {
+			return ClaimNextResponse{}, err
+		}
 
 		return ClaimNextResponse{
 			WorkerID:         worker.WorkerID,
@@ -270,7 +302,57 @@ func (s *Store) ClaimNext(worker WorkerIdentity, now time.Time) (ClaimNextRespon
 		}, nil
 	}
 
+	if changed {
+		if err := s.saveLocked(); err != nil {
+			return ClaimNextResponse{}, err
+		}
+	}
+
 	return ClaimNextResponse{WorkerID: worker.WorkerID, PollAfterSeconds: DefaultPollAfterSeconds, Job: nil}, nil
+}
+
+func (s *Store) RenewLease(jobID string, worker WorkerIdentity, now time.Time) (LeaseRenewResponse, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	entry, ok := s.jobs[jobID]
+	if !ok {
+		return LeaseRenewResponse{}, ErrJobNotFound
+	}
+	if entry.record.State != StateRunning || entry.record.Lease == nil {
+		return LeaseRenewResponse{}, ErrLeaseConflict
+	}
+	if entry.record.ClaimedBy == nil || *entry.record.ClaimedBy != worker.WorkerID {
+		return LeaseRenewResponse{}, ErrLeaseConflict
+	}
+	if entry.record.ClaimedByAuthSubject == nil || *entry.record.ClaimedByAuthSubject != worker.AuthSubject {
+		return LeaseRenewResponse{}, ErrLeaseConflict
+	}
+	if now.After(entry.record.Lease.LeaseExpiresAt) {
+		entry.record.State = StateQueued
+		entry.record.Attempt++
+		entry.record.UpdatedAt = now
+		entry.record.StatusMessage = "lease expired; awaiting reclaim"
+		entry.record.ClaimedBy = nil
+		entry.record.ClaimedByAuthSubject = nil
+		entry.record.Lease = nil
+		entry.revision++
+		if err := s.saveLocked(); err != nil {
+			return LeaseRenewResponse{}, err
+		}
+		return LeaseRenewResponse{}, ErrLeaseConflict
+	}
+
+	lease := newLease(jobID, worker, now)
+	entry.record.Lease = &lease
+	entry.record.UpdatedAt = now
+	entry.record.StatusMessage = "lease renewed"
+	entry.revision++
+	if err := s.saveLocked(); err != nil {
+		return LeaseRenewResponse{}, err
+	}
+
+	return LeaseRenewResponse{JobID: jobID, Lease: lease}, nil
 }
 
 func (s *Store) ApplyStatusUpdate(jobID string, worker WorkerIdentity, update StatusUpdate, now time.Time) (JobStoreRecord, error) {
@@ -322,12 +404,17 @@ func (s *Store) ApplyStatusUpdate(jobID string, worker WorkerIdentity, update St
 	}
 
 	entry.revision++
+	if err := s.saveLocked(); err != nil {
+		return JobStoreRecord{}, err
+	}
 	return entry.snapshot(), nil
 }
 
 func (s *Store) RequestCancel(jobID string, now time.Time) (CancelJobResponse, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
+
+	_ = s.expireAndPersistLocked(now)
 
 	entry, ok := s.jobs[jobID]
 	if !ok {
@@ -346,12 +433,17 @@ func (s *Store) RequestCancel(jobID string, now time.Time) (CancelJobResponse, e
 	}
 
 	entry.revision++
+	if err := s.saveLocked(); err != nil {
+		return CancelJobResponse{}, err
+	}
 	return CancelJobResponse{JobID: jobID, CancelRequested: entry.record.CancelRequested, State: entry.record.State}, nil
 }
 
 func (s *Store) ResolveResultAccess(jobID string, now time.Time) (ResultAccessRecord, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
+
+	_ = s.expireAndPersistLocked(now)
 
 	entry, ok := s.jobs[jobID]
 	if !ok {
@@ -382,6 +474,12 @@ func (s *Store) Get(jobID string) (JobStoreRecord, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
+	nowFn := s.now
+	if nowFn == nil {
+		nowFn = time.Now
+	}
+	_ = s.expireAndPersistLocked(nowFn())
+
 	entry, ok := s.jobs[jobID]
 	if !ok {
 		return JobStoreRecord{}, ErrJobNotFound
@@ -390,7 +488,15 @@ func (s *Store) Get(jobID string) (JobStoreRecord, error) {
 	return entry.snapshot(), nil
 }
 
-func (s *Store) expireLeasesLocked(now time.Time) {
+func (s *Store) expireAndPersistLocked(now time.Time) error {
+	if changed := s.expireLeasesLocked(now); changed {
+		return s.saveLocked()
+	}
+	return nil
+}
+
+func (s *Store) expireLeasesLocked(now time.Time) bool {
+	changed := false
 	for _, entry := range s.jobs {
 		if entry.record.State != StateRunning || entry.record.Lease == nil {
 			continue
@@ -407,7 +513,96 @@ func (s *Store) expireLeasesLocked(now time.Time) {
 		entry.record.ClaimedByAuthSubject = nil
 		entry.record.Lease = nil
 		entry.revision++
+		changed = true
 	}
+	return changed
+}
+
+type persistedStore struct {
+	NextSequence int                     `json:"next_sequence"`
+	Idempotency  map[string]string       `json:"idempotency"`
+	Jobs         map[string]persistedJob `json:"jobs"`
+}
+
+type persistedJob struct {
+	Record                    JobRecord           `json:"record"`
+	Revision                  int                 `json:"revision"`
+	ResultAccess              *ResultAccessRecord `json:"result_access,omitempty"`
+	RetentionExpiresAt        *time.Time          `json:"retention_expires_at,omitempty"`
+	RequestedTimeoutSeconds   int                 `json:"requested_timeout_seconds"`
+	RequestedResultTTLSeconds int                 `json:"requested_result_ttl_seconds"`
+}
+
+func (s *Store) saveLocked() error {
+	if s.statePath == "" {
+		return nil
+	}
+
+	snapshot := persistedStore{
+		NextSequence: s.nextSequence,
+		Idempotency:  make(map[string]string, len(s.idempotency)),
+		Jobs:         make(map[string]persistedJob, len(s.jobs)),
+	}
+	for key, value := range s.idempotency {
+		snapshot.Idempotency[key] = value
+	}
+	for jobID, entry := range s.jobs {
+		snapshot.Jobs[jobID] = persistedJob{
+			Record:                    cloneJobRecord(entry.record),
+			Revision:                  entry.revision,
+			ResultAccess:              cloneResultAccessPtr(entry.resultAccess),
+			RetentionExpiresAt:        cloneTimePtr(entry.retentionExpiresAt),
+			RequestedTimeoutSeconds:   entry.requestedTimeoutSeconds,
+			RequestedResultTTLSeconds: entry.requestedResultTTLSeconds,
+		}
+	}
+
+	data, err := json.MarshalIndent(snapshot, "", "  ")
+	if err != nil {
+		return err
+	}
+	if err := os.MkdirAll(filepath.Dir(s.statePath), 0o755); err != nil {
+		return err
+	}
+	tmpPath := s.statePath + ".tmp"
+	if err := os.WriteFile(tmpPath, data, 0o644); err != nil {
+		return err
+	}
+	return os.Rename(tmpPath, s.statePath)
+}
+
+func (s *Store) load() error {
+	data, err := os.ReadFile(s.statePath)
+	if err != nil {
+		if errors.Is(err, os.ErrNotExist) {
+			return nil
+		}
+		return err
+	}
+
+	var snapshot persistedStore
+	if err := json.Unmarshal(data, &snapshot); err != nil {
+		return err
+	}
+
+	s.nextSequence = snapshot.NextSequence
+	s.idempotency = make(map[string]string, len(snapshot.Idempotency))
+	for key, value := range snapshot.Idempotency {
+		s.idempotency[key] = value
+	}
+	s.jobs = make(map[string]*storedJob, len(snapshot.Jobs))
+	for jobID, entry := range snapshot.Jobs {
+		s.jobs[jobID] = &storedJob{
+			record:                    cloneJobRecord(entry.Record),
+			revision:                  entry.Revision,
+			resultAccess:              cloneResultAccessPtr(entry.ResultAccess),
+			retentionExpiresAt:        cloneTimePtr(entry.RetentionExpiresAt),
+			requestedTimeoutSeconds:   entry.RequestedTimeoutSeconds,
+			requestedResultTTLSeconds: entry.RequestedResultTTLSeconds,
+		}
+	}
+
+	return nil
 }
 
 func (e *storedJob) snapshot() JobStoreRecord {
@@ -520,6 +715,14 @@ func cloneLease(in *Lease) *Lease {
 	}
 	out := *in
 	return &out
+}
+
+func cloneTimePtr(in *time.Time) *time.Time {
+	if in == nil {
+		return nil
+	}
+	v := *in
+	return &v
 }
 
 func cloneJobRecord(in JobRecord) JobRecord {

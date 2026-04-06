@@ -40,11 +40,14 @@ type stubService struct {
 	statusErr     error
 	resultResp    ResultAccessRecord
 	resultErr     error
+	renewResp     LeaseRenewResponse
+	renewErr      error
 	lastSubmitReq SubmitJobRequest
 	lastGetJobID  string
 	lastCancelID  string
 	lastWorker    WorkerIdentity
 	lastUpdate    StatusUpdate
+	lastRenewID   string
 }
 
 func (s *stubService) Submit(req SubmitJobRequest, _ time.Time) (SubmitJobResponse, error) {
@@ -68,6 +71,15 @@ func (s *stubService) ClaimNext(WorkerIdentity, time.Time) (ClaimNextResponse, e
 		return ClaimNextResponse{}, s.claimErr
 	}
 	return s.claimResp, nil
+}
+
+func (s *stubService) RenewLease(jobID string, worker WorkerIdentity, _ time.Time) (LeaseRenewResponse, error) {
+	s.lastRenewID = jobID
+	s.lastWorker = worker
+	if s.renewErr != nil {
+		return LeaseRenewResponse{}, s.renewErr
+	}
+	return s.renewResp, nil
 }
 
 func (s *stubService) ApplyStatusUpdate(_ string, worker WorkerIdentity, update StatusUpdate, _ time.Time) (JobStoreRecord, error) {
@@ -141,12 +153,22 @@ func TestControllerClaimNextUsesVerifiedWorker(t *testing.T) {
 	service := &stubService{claimResp: ClaimNextResponse{WorkerID: "worker-1", PollAfterSeconds: 5}}
 	controller := NewController(stubAuthVerifier{workerIdentity: WorkerIdentity{WorkerID: "worker-1", AuthMode: AuthModeBearer, AuthSubject: "worker:worker-1"}}, service)
 
-	resp, err := controller.ClaimNext("worker-token", time.Date(2026, 4, 5, 11, 10, 0, 0, time.UTC))
+	resp, err := controller.ClaimNext("worker-token", WorkerIdentity{WorkerID: "worker-1", AuthMode: AuthModeBearer, AuthSubject: "worker:worker-1", MachineName: "devbox-01", MaxLeaseSeconds: 120}, time.Date(2026, 4, 5, 11, 10, 0, 0, time.UTC))
 	if err != nil {
 		t.Fatalf("ClaimNext() error = %v", err)
 	}
 	if resp.WorkerID != "worker-1" {
 		t.Fatalf("worker id = %q, want %q", resp.WorkerID, "worker-1")
+	}
+}
+
+func TestControllerClaimNextRejectsMismatchedWorkerIdentity(t *testing.T) {
+	service := &stubService{claimResp: ClaimNextResponse{WorkerID: "worker-1", PollAfterSeconds: 5}}
+	controller := NewController(stubAuthVerifier{workerIdentity: WorkerIdentity{WorkerID: "worker-1", AuthMode: AuthModeBearer, AuthSubject: "worker:worker-1"}}, service)
+
+	_, err := controller.ClaimNext("worker-token", WorkerIdentity{WorkerID: "worker-2", AuthMode: AuthModeBearer, AuthSubject: "worker:worker-2"}, time.Date(2026, 4, 5, 11, 12, 0, 0, time.UTC))
+	if err == nil {
+		t.Fatal("ClaimNext() error = nil, want auth mismatch")
 	}
 }
 
@@ -181,5 +203,24 @@ func TestControllerResultAccessRequiresOperatorAuth(t *testing.T) {
 	_, err := controller.ResultAccess("bad", "job_0001", time.Date(2026, 4, 5, 11, 20, 0, 0, time.UTC))
 	if err == nil {
 		t.Fatal("ResultAccess() error = nil, want auth failure")
+	}
+}
+
+func TestControllerRenewLeasePassesMergedWorkerIdentity(t *testing.T) {
+	service := &stubService{renewResp: LeaseRenewResponse{JobID: "job_0001", Lease: Lease{LeaseID: "lease_job_0001_worker-1"}}}
+	controller := NewController(stubAuthVerifier{workerIdentity: WorkerIdentity{WorkerID: "worker-1", AuthMode: AuthModeBearer, AuthSubject: "worker:worker-1"}}, service)
+
+	resp, err := controller.RenewLease("worker-token", "job_0001", WorkerIdentity{WorkerID: "worker-1", AuthMode: AuthModeBearer, AuthSubject: "worker:worker-1", MachineName: "devbox-01"}, time.Date(2026, 4, 5, 11, 25, 0, 0, time.UTC))
+	if err != nil {
+		t.Fatalf("RenewLease() error = %v", err)
+	}
+	if resp.JobID != "job_0001" {
+		t.Fatalf("job id = %q, want %q", resp.JobID, "job_0001")
+	}
+	if service.lastRenewID != "job_0001" {
+		t.Fatalf("renewed job id = %q, want %q", service.lastRenewID, "job_0001")
+	}
+	if service.lastWorker.MachineName != "devbox-01" {
+		t.Fatalf("machine name = %q, want %q", service.lastWorker.MachineName, "devbox-01")
 	}
 }

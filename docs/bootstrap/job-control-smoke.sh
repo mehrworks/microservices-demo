@@ -5,6 +5,8 @@ BASE_URL="${BASE_URL:-http://127.0.0.1:8080}"
 OPERATOR_TOKEN="${JOB_CONTROL_OPERATOR_TOKEN:-}"
 WORKER_TOKEN="${JOB_CONTROL_WORKER_TOKEN:-}"
 JOB_TYPE="${JOB_CONTROL_JOB_TYPE:-local-analysis}"
+WORKER_ID="${JOB_CONTROL_WORKER_ID:-worker:static-bearer}"
+WORKER_SUBJECT="${JOB_CONTROL_WORKER_SUBJECT:-$WORKER_ID}"
 
 usage() {
   cat <<'EOF'
@@ -26,6 +28,9 @@ This helper exercises the dormant internal operator/worker simulation path:
 4. post a succeeded status update with a synthetic local-file result
 5. fetch the result-access record
 6. request cancellation to show the endpoint behavior after a terminal update
+
+This helper remains a manual simulation path. It does not exercise lease renewal
+or stale-worker recovery logic automatically.
 EOF
 }
 
@@ -56,8 +61,9 @@ need_cmd python3
 
 submit_payload=$(python3 - <<'PY'
 import json
+import os
 print(json.dumps({
-    "job_type": "local-analysis",
+    "job_type": os.environ.get("JOB_CONTROL_JOB_TYPE", "local-analysis"),
     "payload": {"input": "demo", "mode": "smoke"}
 }))
 PY
@@ -83,8 +89,20 @@ curl -fsS "$BASE_URL/internal/jobs/$JOB_ID" \
 printf '\n'
 
 printf '==> claim job as simulated worker\n'
+claim_payload=$(python3 - <<'PY' "$WORKER_ID" "$WORKER_SUBJECT"
+import json
+import sys
+print(json.dumps({
+    "worker_id": sys.argv[1],
+    "auth_mode": "bearer",
+    "auth_subject": sys.argv[2]
+}))
+PY
+)
 claim_response=$(curl -fsS -X POST "$BASE_URL/internal/worker/claim" \
-  -H "Authorization: Bearer $WORKER_TOKEN")
+  -H "Authorization: Bearer $WORKER_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d "$claim_payload")
 printf '%s\n' "$claim_response"
 
 printf '==> mark job succeeded\n'

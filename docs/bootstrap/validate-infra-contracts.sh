@@ -51,6 +51,8 @@ schema_files = [
     "config/contracts/job-control/schema/lease.schema.json",
     "config/contracts/job-control/schema/claim-next-request.schema.json",
     "config/contracts/job-control/schema/claim-next-response.schema.json",
+    "config/contracts/job-control/schema/renew-lease-request.schema.json",
+    "config/contracts/job-control/schema/renew-lease-response.schema.json",
     "config/contracts/job-control/schema/status-update.schema.json",
     "config/contracts/job-control/schema/job-record.schema.json",
     "config/contracts/job-control/schema/job-store-record.schema.json",
@@ -69,6 +71,8 @@ examples = {
     "config/contracts/job-control/lease.example.json": ["lease_id", "issued_at", "lease_expires_at", "lease_duration_seconds"],
     "config/contracts/job-control/claim-next-request.example.json": ["worker"],
     "config/contracts/job-control/claim-next-response.example.json": ["worker_id", "poll_after_seconds", "job"],
+    "config/contracts/job-control/renew-lease-request.example.json": ["worker_id", "auth_mode", "auth_subject"],
+    "config/contracts/job-control/renew-lease-response.example.json": ["job_id", "lease"],
     "config/contracts/job-control/status-update.example.json": ["job_id", "worker_id", "state", "updated_at"],
     "config/contracts/job-control/job-record.example.json": ["job_id", "job_type", "state", "submitted_at", "updated_at", "payload"],
     "config/contracts/job-control/job-store-record.example.json": ["job", "revision", "etag"],
@@ -90,6 +94,7 @@ for rel in schema_files:
             "/v1/jobs/{job_id}",
             "/v1/jobs/{job_id}:cancel",
             "/v1/worker/claim",
+            "/v1/jobs/{job_id}/lease:renew",
             "/v1/jobs/{job_id}/status",
         }
         missing = sorted(required_paths.difference(data.get("paths", {}).keys()))
@@ -194,6 +199,9 @@ log "validating frontend job-control package"
 
 log "validating job-control reference package"
 (cd "$ROOT_DIR/tools/jobcontrolref" && go test ./... >/dev/null)
+
+log "validating job-control worker package"
+(cd "$ROOT_DIR/tools/jobcontrolworker" && go test ./... >/dev/null)
 
 for stage in "${stages[@]}"; do
   log "initializing ${stage}"

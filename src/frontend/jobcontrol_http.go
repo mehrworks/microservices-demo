@@ -3,8 +3,10 @@ package main
 import (
 	"encoding/json"
 	"errors"
+	"io"
 	"net/http"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 
@@ -15,8 +17,16 @@ import (
 )
 
 const (
-	jobControlOperatorTokenEnv = "JOB_CONTROL_OPERATOR_TOKEN"
-	jobControlWorkerTokenEnv   = "JOB_CONTROL_WORKER_TOKEN"
+	jobControlOperatorTokenEnv   = "JOB_CONTROL_OPERATOR_TOKEN"
+	jobControlOperatorSubjectEnv = "JOB_CONTROL_OPERATOR_SUBJECT"
+	jobControlWorkerTokenEnv     = "JOB_CONTROL_WORKER_TOKEN"
+	jobControlStatePathEnv       = "JOB_CONTROL_STATE_PATH"
+	jobControlWorkerIDEnv        = "JOB_CONTROL_WORKER_ID"
+	jobControlWorkerSubjectEnv   = "JOB_CONTROL_WORKER_SUBJECT"
+	jobControlWorkerIssuerEnv    = "JOB_CONTROL_WORKER_ISSUER"
+	jobControlWorkerMachineEnv   = "JOB_CONTROL_WORKER_MACHINE_NAME"
+	jobControlWorkerVersionEnv   = "JOB_CONTROL_WORKER_VERSION"
+	jobControlWorkerLeaseEnv     = "JOB_CONTROL_WORKER_MAX_LEASE_SECONDS"
 )
 
 type jobControlErrorEnvelope struct {
@@ -34,9 +44,32 @@ func configureJobControlController(log logrus.FieldLogger) *frontendjobcontrol.C
 	}
 
 	workerToken := os.Getenv(jobControlWorkerTokenEnv)
+	statePath := os.Getenv(jobControlStatePathEnv)
+	store, err := frontendjobcontrol.NewPersistentStore(statePath)
+	if err != nil {
+		log.WithError(err).Fatal("failed to initialize job control store")
+	}
+	if statePath == "" {
+		log.Info("job control using in-memory store")
+	} else {
+		log.WithField("job_control_state_path", statePath).Info("job control using file-backed store")
+	}
 	controller := frontendjobcontrol.NewController(
-		frontendjobcontrol.NewStaticBearerVerifier(operatorToken, workerToken),
-		frontendjobcontrol.NewStore(),
+		frontendjobcontrol.NewStaticBearerVerifierFromConfig(frontendjobcontrol.StaticBearerConfig{
+			OperatorToken:   operatorToken,
+			OperatorSubject: getenvDefault(jobControlOperatorSubjectEnv, "operator:static-bearer"),
+			WorkerToken:     workerToken,
+			WorkerIdentity: frontendjobcontrol.WorkerIdentity{
+				WorkerID:        getenvDefault(jobControlWorkerIDEnv, "worker:static-bearer"),
+				AuthMode:        frontendjobcontrol.AuthModeBearer,
+				AuthSubject:     getenvDefault(jobControlWorkerSubjectEnv, getenvDefault(jobControlWorkerIDEnv, "worker:static-bearer")),
+				AuthIssuer:      os.Getenv(jobControlWorkerIssuerEnv),
+				MachineName:     os.Getenv(jobControlWorkerMachineEnv),
+				WorkerVersion:   os.Getenv(jobControlWorkerVersionEnv),
+				MaxLeaseSeconds: getenvInt(jobControlWorkerLeaseEnv, frontendjobcontrol.DefaultLeaseSeconds),
+			},
+		}),
+		store,
 	)
 	log.Info("job control internal API enabled")
 	return controller
@@ -51,8 +84,11 @@ func registerJobControlRoutes(r *mux.Router, baseURL string, fe *frontendServer)
 	r.HandleFunc(baseURL+"/internal/jobs/{job_id}", fe.getJobHandler).Methods(http.MethodGet)
 	r.HandleFunc(baseURL+"/internal/jobs/{job_id}/result", fe.getJobResultHandler).Methods(http.MethodGet)
 	r.HandleFunc(baseURL+"/internal/jobs/{job_id}:cancel", fe.cancelJobHandler).Methods(http.MethodPost)
-	r.HandleFunc(baseURL+"/internal/worker/claim", fe.claimJobHandler).Methods(http.MethodPost)
-	r.HandleFunc(baseURL+"/internal/jobs/{job_id}/status", fe.updateJobStatusHandler).Methods(http.MethodPost)
+	if os.Getenv(jobControlWorkerTokenEnv) != "" {
+		r.HandleFunc(baseURL+"/internal/worker/claim", fe.claimJobHandler).Methods(http.MethodPost)
+		r.HandleFunc(baseURL+"/internal/jobs/{job_id}/lease:renew", fe.renewLeaseHandler).Methods(http.MethodPost)
+		r.HandleFunc(baseURL+"/internal/jobs/{job_id}/status", fe.updateJobStatusHandler).Methods(http.MethodPost)
+	}
 }
 
 func (fe *frontendServer) submitJobHandler(w http.ResponseWriter, r *http.Request) {
@@ -102,7 +138,32 @@ func (fe *frontendServer) cancelJobHandler(w http.ResponseWriter, r *http.Reques
 func (fe *frontendServer) claimJobHandler(w http.ResponseWriter, r *http.Request) {
 	log := jobControlRequestLogger(r)
 
-	resp, err := fe.jobControlController.ClaimNext(extractBearerToken(r.Header.Get("Authorization")), time.Now())
+	var requested frontendjobcontrol.WorkerIdentity
+	if err := json.NewDecoder(r.Body).Decode(&requested); err != nil && !errors.Is(err, io.EOF) {
+		writeJobControlError(log, w, http.StatusBadRequest, "invalid_request", "request body must be valid JSON", false, nil)
+		return
+	}
+
+	resp, err := fe.jobControlController.ClaimNext(extractBearerToken(r.Header.Get("Authorization")), requested, time.Now())
+	if err != nil {
+		writeJobControlControllerError(log, w, err)
+		return
+	}
+
+	writeJobControlJSON(w, http.StatusOK, resp)
+}
+
+func (fe *frontendServer) renewLeaseHandler(w http.ResponseWriter, r *http.Request) {
+	log := jobControlRequestLogger(r)
+	jobID := mux.Vars(r)["job_id"]
+
+	var requested frontendjobcontrol.WorkerIdentity
+	if err := json.NewDecoder(r.Body).Decode(&requested); err != nil && !errors.Is(err, io.EOF) {
+		writeJobControlError(log, w, http.StatusBadRequest, "invalid_request", "request body must be valid JSON", false, nil)
+		return
+	}
+
+	resp, err := fe.jobControlController.RenewLease(extractBearerToken(r.Header.Get("Authorization")), jobID, requested, time.Now())
 	if err != nil {
 		writeJobControlControllerError(log, w, err)
 		return
@@ -187,4 +248,23 @@ func extractBearerToken(header string) string {
 		return ""
 	}
 	return strings.TrimSpace(parts[1])
+}
+
+func getenvDefault(key, fallback string) string {
+	if value := os.Getenv(key); value != "" {
+		return value
+	}
+	return fallback
+}
+
+func getenvInt(key string, fallback int) int {
+	value := os.Getenv(key)
+	if value == "" {
+		return fallback
+	}
+	parsed, err := strconv.Atoi(value)
+	if err != nil || parsed <= 0 {
+		return fallback
+	}
+	return parsed
 }

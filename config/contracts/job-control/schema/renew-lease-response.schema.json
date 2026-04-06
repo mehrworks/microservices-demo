@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/microservices-demo/job-control/renew-lease-response.schema.json",
+  "title": "Renew lease response",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "job_id",
+    "lease"
+  ],
+  "properties": {
+    "job_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "lease": {
+      "$ref": "./lease.schema.json"
+    }
+  }
+}
